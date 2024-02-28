@@ -19,10 +19,6 @@ enum StateSelectedTile {
 #[derive(Component)]
 pub struct MarkerTileSelector;
 
-// marker component
-#[derive(Component)]
-pub struct MarkerTextLoadingEditor;
-
 #[derive(Component)]
 pub struct MarkerTileSample;
 
@@ -49,6 +45,11 @@ struct GroundPlane;
 #[derive(Component)]
 struct MarkerEditorGUI;
 
+// marker component
+#[derive(Component)]
+pub struct MarkerTextLoadingEditor;
+
+
 // -- PLUGIN -----------------------------------------------------------------
 
 pub struct PluginEditor;
@@ -64,11 +65,9 @@ impl Plugin for PluginEditor{
                     in_state(StateGlobal::Editor).and_then(
                     in_state(StateEditorLoaded::NotLoaded))
                 ),
-                editor_loading_load.run_if(
-                    in_state(StateEditorLoaded::Loading)
-                ),
             ),
         );
+        app.add_systems(OnEnter(StateEditorLoaded::Loading), editor_loading_load);
         app.add_systems(
             OnEnter(StateGlobal::Editor),
                 editor_setup.run_if(in_state(StateEditorLoaded::Loaded))
@@ -83,7 +82,7 @@ impl Plugin for PluginEditor{
 
 fn editor_loading_prepare(
     mut commands: Commands,
-    mut state_global: ResMut<NextState<StateEditorLoaded>>,
+    mut state_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
 ) {
     commands.spawn(
         (
@@ -103,12 +102,12 @@ fn editor_loading_prepare(
             MarkerTextLoadingEditor,
         )
     );
-    state_global.set(StateEditorLoaded::Loading);
+    state_editor_loaded.set(StateEditorLoaded::Loading);
 }
 
 fn editor_loading_load(
     mut commands: Commands,
-    mut state_global: ResMut<NextState<StateEditorLoaded>>,
+    mut state_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     entity: Query<Entity, With <MarkerTextLoadingEditor>>
 ) {
     // what do we do here...
@@ -117,7 +116,7 @@ fn editor_loading_load(
     // We spawn tile selector only when loading and running?
      
     commands.entity(entity.single()).despawn();
-    state_global.set(StateEditorLoaded::Loaded);
+    state_editor_loaded.set(StateEditorLoaded::Loaded);
 }
 
 

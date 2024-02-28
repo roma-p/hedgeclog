@@ -19,11 +19,22 @@ pub enum StateEditorLoaded {
     Loaded,
 }
 
+// Used to check if level is loaded or not.
+// Use when loading new level.
+#[derive(States, Default, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+pub enum StateLevelLoaded {
+    #[default]
+    NotLoaded,
+    Loading,
+    Loaded,
+}
+
 pub struct PluginConfig;
 
 impl Plugin for PluginConfig{
     fn build(&self, app: &mut App){
         app.init_state::<StateGlobal>();
+        app.init_state::<StateLevelLoaded>();
         app.init_state::<StateEditorLoaded>();
     }
 }

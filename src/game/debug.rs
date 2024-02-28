@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::config::{StateGlobal, StateEditorLoaded};
+use crate::config::{StateGlobal, StateEditorLoaded, StateLevelLoaded};
 
 pub struct PluginDebug;
 
@@ -9,6 +9,8 @@ impl Plugin for PluginDebug{
         app.add_systems(OnEnter(StateGlobal::Game), print_mode_game);
         app.add_systems(OnEnter(StateEditorLoaded::Loading), print_loading_editor);
         app.add_systems(OnEnter(StateEditorLoaded::Loaded), print_loaded_editor);
+        app.add_systems(OnEnter(StateLevelLoaded::Loading), print_loading_level);
+        app.add_systems(OnEnter(StateLevelLoaded::Loaded),  print_loaded_level);
     } 
 }
 
@@ -26,6 +28,14 @@ fn print_loading_editor() {
 
 fn print_loaded_editor() {
     info!("Loaded editor.");
+}
+
+fn print_loading_level() {
+    info!("Loading level...");
+}
+
+fn print_loaded_level() {
+    info!("Loaded level.");
 }
 
 // fn print_hedgehog_position(mut query: Query<(Entity, &Transform)>){
