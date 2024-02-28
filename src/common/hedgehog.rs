@@ -2,7 +2,8 @@ use bevy::prelude::*;
 pub struct PluginHedghog;
 
 use crate::{
-    movement::{GridPosition, Velocity},
+    common::level::{GridPosition},
+    common::movement::Velocity
 };
 
 impl Plugin for PluginHedghog{

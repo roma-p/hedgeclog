@@ -3,11 +3,6 @@ use bevy::prelude::*;
 pub struct PluginMovement;
 
 #[derive(Component, Debug)]
-pub struct GridPosition {
-    pub value: IVec2
-}
-
-#[derive(Component, Debug)]
 pub struct Velocity {
     pub value: Vec3
 }

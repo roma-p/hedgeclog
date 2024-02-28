@@ -1,7 +1,5 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
 
-const CAMERA_DISTANCE: f32 = 20.0;
-
 pub struct PluginCamera;
 
 impl Plugin for PluginCamera {
