@@ -1,17 +1,13 @@
 use bevy::prelude::*;
-use bevy::transform::commands;
-use crate::config::{StateGlobal, StateEditorLoaded};
+use crate::config::{
+    StateGlobal, StateEditorLoaded, StateEditorView,
+    TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN,
+};
 use crate::common::level::{BundleTile, BundleTileLevel, LEVEL_ORIGIN, GridPosition};
 use crate::common::asset_loader::SceneAssets;
 
 // -- STATE ------------------------------------------------------------------
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-enum StateSelectedTile {
-    TileFloor,
-    TileWater,
-    TileFire,
-}
 
 // -- BUNDLE : TILES ---------------------------------------------------------
 
@@ -45,7 +41,6 @@ struct GroundPlane;
 #[derive(Component)]
 struct MarkerEditorGUI;
 
-// marker component
 #[derive(Component)]
 pub struct MarkerTextLoadingEditor;
 
@@ -107,6 +102,7 @@ fn editor_loading_prepare(
 
 fn editor_loading_load(
     mut commands: Commands,
+    scene_assets: Res<SceneAssets>,
     mut state_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     entity: Query<Entity, With <MarkerTextLoadingEditor>>
 ) {
@@ -115,6 +111,18 @@ fn editor_loading_load(
     // Loading the necessary text.
     // We spawn tile selector only when loading and running?
      
+    commands.spawn(BundleTile{
+        model: SceneBundle {
+            scene: scene_assets.tile_floor.clone(),
+            transform: Transform::from_xyz(
+                1000.0, 0.0, 1000.0
+            ),
+            ..default()
+        }, 
+        grid_position: GridPosition{
+            value: IVec2::new(0, 0)
+        }
+    });
     commands.entity(entity.single()).despawn();
     state_editor_loaded.set(StateEditorLoaded::Loaded);
 }
@@ -158,12 +166,24 @@ fn edit_level(mut commands: Commands) {
 fn user_input_editor(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut state_global: ResMut<NextState<StateGlobal>>,
+    state_editor_view: Res<State<StateEditorView>>,
+    mut state_next_editor_view: ResMut<NextState<StateEditorView>>,
 
 ) {
-    if keyboard_input.pressed(KeyCode::Escape) {
+    // QUITTING EDITOR
+    if keyboard_input.just_pressed(KeyCode::Escape) {
         state_global.set(StateGlobal::Game); 
     }
-    // add move hedghog, restart, undo.
+
+    // ENTERRING / LEAVING TILE SELECTION SCREEN.
+    if keyboard_input.just_pressed(KeyCode::Space) {
+        use StateEditorView::*;
+        let next = match **state_editor_view {
+            Game => TileSelector,
+            TileSelector => Game,
+        };
+        state_next_editor_view.set(next);
+    }
 } 
 
 

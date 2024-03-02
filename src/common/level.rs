@@ -1,7 +1,8 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
 
 use crate::common::asset_loader::SceneAssets;
-use crate::config::{StateGlobal, StateLevelLoaded};
+use crate::config::{StateGlobal, StateLevelLoaded, StateEditorView};
+use crate::common::camera::{MarkerCamera, BundleCameraInfo, MarkerCameraInfoDefault};
 
 pub const LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
@@ -49,9 +50,11 @@ impl Plugin for PluginLevel{
                 level_loading_prepare.run_if(in_state(StateLevelLoaded::NotLoaded)),
             )
         );
-        app.add_systems( OnEnter(StateLevelLoaded::Loading), level_loading_load);
+        app.add_systems(OnEnter(StateLevelLoaded::Loading), level_loading_load);
     }
 }
+
+// -- SYSTEM -----------------------------------------------------------------
 
 fn level_loading_prepare(
     mut commands: Commands,
@@ -81,32 +84,36 @@ fn level_loading_prepare(
 fn level_loading_load(
     mut commands: Commands,
     mut state_level_loaded: ResMut<NextState<StateLevelLoaded>>,
+    scene_assets: Res<SceneAssets>,
     entity: Query<Entity, With <MarkerTextLoadingLevel>>
 ) {
     // what do we do here...
     // loading the off screen tile selector.
     // Loading the necessary text.
     // We spawn tile selector only when loading and running?
-     
+    commands.spawn(BundleTile{
+        model: SceneBundle {
+            scene: scene_assets.tile_floor.clone(),
+            transform: Transform::from_translation(LEVEL_ORIGIN),
+            ..default()
+        }, 
+        grid_position: GridPosition{
+            value: IVec2::new(0, 0)
+        }
+    });
+    commands.spawn(BundleTile{
+        model: SceneBundle {
+            scene: scene_assets.tile_fire.clone(),
+            transform: Transform::from_translation(
+                Vec3::new(2.0, 0.0, 0.0)
+                
+            ),
+            ..default()
+        }, 
+        grid_position: GridPosition{
+            value: IVec2::new(0, 0)
+        }
+    });
     commands.entity(entity.single()).despawn();
     state_level_loaded.set(StateLevelLoaded::Loaded);
 }
-
-// -- SYSTEM -----------------------------------------------------------------
-
-// fn query_scene_entities(
-//     commands: Commands,
-//     scene_spawner: Res<SceneSpawner>,
-//     scene_handles: Query<(Entity, &Handle<Scene>)>,
-// ) {
-//     for (entity, scene_handle) in scene_handles.iter() {
-//         // Spawn the scene into the world
-//         let scene_instance = scene_spawner.spawn(scene_handle.clone());
-//         
-//         // Query entities in the scene
-//         for entity in scene_spawner.iter_instance_entities(scene_instance) {
-//             // Perform operations on the entities
-//             println!("Entity in scene: {:?}", entity);
-//         }
-//     }
-// }
