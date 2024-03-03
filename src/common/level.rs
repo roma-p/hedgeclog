@@ -87,10 +87,6 @@ fn level_loading_load(
     scene_assets: Res<SceneAssets>,
     entity: Query<Entity, With <MarkerTextLoadingLevel>>
 ) {
-    // what do we do here...
-    // loading the off screen tile selector.
-    // Loading the necessary text.
-    // We spawn tile selector only when loading and running?
     commands.spawn(BundleTile{
         model: SceneBundle {
             scene: scene_assets.tile_floor.clone(),

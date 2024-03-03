@@ -1,3 +1,6 @@
+use core::f32;
+use std::usize;
+
 use bevy::prelude::*;
 use crate::config::{
     StateGlobal, StateEditorLoaded, StateEditorView,
@@ -6,10 +9,16 @@ use crate::config::{
 use crate::common::level::{BundleTile, BundleTileLevel, LEVEL_ORIGIN, GridPosition};
 use crate::common::asset_loader::SceneAssets;
 
-// -- STATE ------------------------------------------------------------------
+const TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER: usize = 4;
+const TILE_SPACING: usize = 1;
 
 
 // -- BUNDLE : TILES ---------------------------------------------------------
+
+#[derive(Resource, Debug, Default)]
+pub struct TilesSelectionGrid {
+    pub tile_vector: Vec<Handle<Scene>>,
+}
 
 // marker component
 #[derive(Component)]
@@ -51,6 +60,7 @@ pub struct PluginEditor;
 
 impl Plugin for PluginEditor{
     fn build(&self, app: &mut App){
+        app.insert_resource(TilesSelectionGrid::default());
         app.add_systems(
             Update, 
             (
@@ -77,8 +87,23 @@ impl Plugin for PluginEditor{
 
 fn editor_loading_prepare(
     mut commands: Commands,
+    scene_assets: Res<SceneAssets>,
+    mut tiles_selection_grid: ResMut<TilesSelectionGrid>,
     mut state_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
 ) {
+
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_floor.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_fire.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_water.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_armoire.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_exit.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_table_1.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_table_2.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_wall_corner.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_wall_angle.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.tile_wall.clone());
+    tiles_selection_grid.tile_vector.push(scene_assets.title_desk.clone());
+
     commands.spawn(
         (
             TextBundle::from_section(
@@ -102,27 +127,48 @@ fn editor_loading_prepare(
 
 fn editor_loading_load(
     mut commands: Commands,
-    scene_assets: Res<SceneAssets>,
+    mut tiles_selection_grid: ResMut<TilesSelectionGrid>,
     mut state_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     entity: Query<Entity, With <MarkerTextLoadingEditor>>
 ) {
-    // what do we do here...
-    // loading the off screen tile selector.
-    // Loading the necessary text.
-    // We spawn tile selector only when loading and running?
-     
-    commands.spawn(BundleTile{
-        model: SceneBundle {
-            scene: scene_assets.tile_floor.clone(),
-            transform: Transform::from_xyz(
-                1000.0, 0.0, 1000.0
-            ),
-            ..default()
-        }, 
-        grid_position: GridPosition{
-            value: IVec2::new(0, 0)
+
+    let tile_number = tiles_selection_grid.tile_vector.len();
+    let column_number = TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER;
+    let row_number = tile_number / column_number + 1;
+    
+    let spawn_start_position = TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN - Vec3::new(
+        row_number as f32,
+        0.0,
+        column_number as f32
+    );
+
+    let mut current_row:usize = 0;
+    let mut current_col:usize = 0;
+    for tile in tiles_selection_grid.tile_vector.iter_mut() {
+        let position = spawn_start_position + Vec3::new(
+            (current_row * 2 + current_row * TILE_SPACING) as f32,
+            0.0,
+            (current_col * 2 + current_col * TILE_SPACING) as f32,
+        );
+        commands.spawn(BundleTile{
+            model: SceneBundle {
+                scene: tile.clone(),
+                transform: Transform::from_translation(position),
+                ..default()
+            }, 
+            grid_position: GridPosition{
+                value: IVec2::new(0, 0)
+            }
+        });
+
+        if current_col >= TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER - 1{
+            current_col = 0;
+            current_row += 1;
+        } else {
+            current_col += 1;
         }
-    });
+    }
+
     commands.entity(entity.single()).despawn();
     state_editor_loaded.set(StateEditorLoaded::Loaded);
 }
