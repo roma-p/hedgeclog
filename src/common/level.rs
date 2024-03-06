@@ -56,6 +56,8 @@ impl Plugin for PluginLevel{
 
 // -- SYSTEM -----------------------------------------------------------------
 
+// -- loading ----------------------------------------------------------------
+
 fn level_loading_prepare(
     mut commands: Commands,
     mut state_level_loaded: ResMut<NextState<StateLevelLoaded>>,
