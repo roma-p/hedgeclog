@@ -1,19 +1,21 @@
-use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy::prelude::*;
 
 use crate::common::asset_loader::SceneAssets;
-use crate::config::{StateGlobal, StateLevelLoaded, StateEditorView};
-use crate::common::camera::{MarkerCamera, BundleCameraInfo, MarkerCameraInfoDefault};
+use crate::config::{StateLevelLoaded, LEVEL_DEFAULT_SIZE};
+use crate::common::tiles::EnumeTileBehaviour;
 
 pub const LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
-// -- COMPONENENTS : GRID INFO -----------------------------------------------
+
+#[derive(Resource, Debug, Default)]
+pub struct LevelGrid {
+    pub level_grid: [[EnumeTileBehaviour; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
+}
 
 #[derive(Component, Debug, Clone)]
 pub struct GridPosition {
     pub value: IVec2
 }
-
-// -- COMPONENT : GUI --------------------------------------------------------
 
 #[derive(Component)]
 struct MarkerEditorGUI;
@@ -22,28 +24,12 @@ struct MarkerEditorGUI;
 #[derive(Component)]
 pub struct MarkerTextLoadingLevel;
 
-
-// -- BUNDLE : TILES ---------------------------------------------------------
-
-#[derive(Bundle)]
-pub struct BundleTile{
-    pub model: SceneBundle,
-    pub grid_position: GridPosition,
-}
-
-// tiles that actually compose the level
-#[derive(Bundle)]
-pub struct BundleTileLevel{
-    pub tile: BundleTile,
-}
-
 // -- PLUGIN -----------------------------------------------------------------
 
 pub struct PluginLevel;
 
 impl Plugin for PluginLevel{
     fn build(&self, app: &mut App){
-        // app.add_systems(PostStartup, spawn_level_tile_from_selector);
         app.add_systems(
             PostStartup,
             (
@@ -89,29 +75,6 @@ fn level_loading_load(
     scene_assets: Res<SceneAssets>,
     entity: Query<Entity, With <MarkerTextLoadingLevel>>
 ) {
-    commands.spawn(BundleTile{
-        model: SceneBundle {
-            scene: scene_assets.tile_floor.clone(),
-            transform: Transform::from_translation(LEVEL_ORIGIN),
-            ..default()
-        }, 
-        grid_position: GridPosition{
-            value: IVec2::new(0, 0)
-        }
-    });
-    commands.spawn(BundleTile{
-        model: SceneBundle {
-            scene: scene_assets.tile_fire.clone(),
-            transform: Transform::from_translation(
-                Vec3::new(2.0, 0.0, 0.0)
-                
-            ),
-            ..default()
-        }, 
-        grid_position: GridPosition{
-            value: IVec2::new(0, 0)
-        }
-    });
     commands.entity(entity.single()).despawn();
     state_level_loaded.set(StateLevelLoaded::Loaded);
 }

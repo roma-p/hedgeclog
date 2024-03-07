@@ -3,3 +3,4 @@ pub mod camera;
 pub mod hedgehog;
 pub mod level;
 pub mod movement;
+pub mod tiles;

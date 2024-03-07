@@ -7,8 +7,8 @@ use crate::config::{
     StateGlobal, StateEditorLoaded, StateEditorView,
     TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN,
 };
-use crate::common::level::{BundleTile, GridPosition, LEVEL_ORIGIN};
-use crate::common::asset_loader::SceneAssets;
+use crate::common::level::{GridPosition, LEVEL_ORIGIN};
+use crate::common::tiles::{BundleTile, ResCollectionTile};
 use crate::common::camera::MarkerCamera;
 
 const TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER: usize = 4;
@@ -21,13 +21,18 @@ const TILE_SPACING: f32 = 0.5;
 // need to split between parts that are modified together...
 #[derive(Resource, Debug, Default)]
 pub struct TilesSelectionGrid {
-    pub tile_vector: Vec<Handle<Scene>>,
     pub current_idx: usize,
-    pub selected_idx: usize,
     pub col_number: usize,
     pub row_number: usize,
     pub col_number_on_last_row: usize,
     pub translation_first_tile: Vec3,
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct LevelBuilderInfo {
+    pub selected_idx: usize,
+    pub grid_pos_x: usize,
+    pub grid_pos_z: usize,
 }
 
 #[derive(Resource, Default)]
@@ -47,12 +52,6 @@ pub struct MarkerTileCreator;
 
 #[derive(Component)]
 pub struct MarkerTileSample;
-
-// singleton of the tile display to edit level.
-#[derive(Bundle)]
-pub struct BundleTileSample{
-    pub tile: BundleTile,
-}
 
 #[derive(Component)]
 struct MarkerTileSelectorCube;
@@ -74,7 +73,6 @@ impl Plugin for PluginEditor{
     fn build(&self, app: &mut App){
         app.insert_resource(TilesSelectionGrid::default())
             .insert_resource(CursorToGroundCoordonate::default())
-
             .add_systems(OnEnter(StateEditorLoaded::Loading), editor_loading_load)
             .add_systems(
                 OnEnter(StateGlobal::Editor),
@@ -150,24 +148,13 @@ fn editor_loading_load(
     mut cursor_to_plane_coord: ResMut<CursorToGroundCoordonate>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    scene_assets: Res<SceneAssets>,
+    mut r_collection_tile: ResMut<ResCollectionTile>,
     entity: Query<Entity, With <MarkerTextLoadingEditor>>
 ) {
 
     // 1. Filling ressources.
 
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_floor.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_fire.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_water.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_armoire.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_exit.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_table_1.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_table_2.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_wall_corner.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.tile_wall.clone());
-    tiles_selection_grid.tile_vector.push(scene_assets.title_desk.clone());
-
-    let tile_number = tiles_selection_grid.tile_vector.len();
+    let tile_number = r_collection_tile.tiles.len();
 
     tiles_selection_grid.col_number = TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER;
     let remainer = tile_number % tiles_selection_grid.col_number;
@@ -194,7 +181,7 @@ fn editor_loading_load(
 
     let mut current_row:usize = 0;
     let mut current_col:usize = 0;
-    for tile in tiles_selection_grid.tile_vector.iter_mut() {
+    for tile in r_collection_tile.tiles.iter_mut() {
         let position = translation_first_tile + Vec3::new(
             current_row as f32 * 2.0 + current_row as f32 * TILE_SPACING,
             0.0,
@@ -202,13 +189,11 @@ fn editor_loading_load(
         );
         commands.spawn(BundleTile{
             model: SceneBundle {
-                scene: tile.clone(),
+                scene: tile.tile_model.clone(),
                 transform: Transform::from_translation(position),
                 ..default()
             }, 
-            grid_position: GridPosition{
-                value: IVec2::new(0, 0)
-            }
+            tile_id: tile.tile_id.clone(),
         });
 
         if current_col >= TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER - 1{
@@ -226,8 +211,6 @@ fn editor_loading_load(
     commands.spawn(
         (
             PbrBundle {
-                // TODO: not use scale... spawn it with size two if possible...
-                // use from_size
                 mesh: meshes.add(Cuboid::from_size(Vec3::ONE * selector_cube_size)),
                 material: materials.add(Color::rgba(0.0, 0.7, 0.0, 0.5)),
                 transform: Transform::from_translation(
@@ -243,8 +226,8 @@ fn editor_loading_load(
     commands.spawn((
         MarkerGroundPlane,
         PbrBundle {
-            // TODO: invisible.
             transform: Transform::default(),
+            visibility: Visibility::Hidden,
             ..default()
         },
     ));
@@ -260,22 +243,20 @@ fn editor_loading_load(
 
 fn editor_setup(
     mut commands: Commands,
-    tiles_selection_grid: Res<TilesSelectionGrid>,
+    r_collection_tile: Res<ResCollectionTile>,
+    r_builder_info: Res<LevelBuilderInfo>,
 ) {
 
-    // Spawning creator tile (used to edit level).
-    let tile_idx = tiles_selection_grid.selected_idx;
+    let tile_idx = r_builder_info.selected_idx;
     commands.spawn(
         (
             BundleTile{
                 model: SceneBundle {
-                    scene: tiles_selection_grid.tile_vector[tile_idx].clone(),
+                    scene: r_collection_tile.tiles[tile_idx].tile_model.clone(),
                     transform: Transform::from_translation(LEVEL_ORIGIN),
                     ..default()
                 }, 
-                grid_position: GridPosition{
-                    value: IVec2::new(0, 0)
-                }
+                tile_id: r_collection_tile.tiles[tile_idx].tile_id.clone(),
             },
             MarkerTileCreator,
         )
@@ -338,11 +319,12 @@ fn user_input_editor_global(
 
 fn user_input_editor_tile_selection(
     buttons: Res<ButtonInput<MouseButton>>,
-    mut r_tile_selection_grid: ResMut<TilesSelectionGrid>,
+    r_tile_selection_grid: Res<TilesSelectionGrid>,
+    mut r_builder_info: ResMut<LevelBuilderInfo>,
     mut state_next_editor_view: ResMut<NextState<StateEditorView>>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
-        r_tile_selection_grid.selected_idx = r_tile_selection_grid.current_idx;
+        r_builder_info.selected_idx = r_tile_selection_grid.current_idx;
         state_next_editor_view.set(StateEditorView::Game);
     }
 }
@@ -360,23 +342,22 @@ fn user_input_editor_game(
 fn update_tile_creator(
     mut commands: Commands,
     q_tile_creator: Query<Entity, With <MarkerTileCreator>>,
-    tiles_selection_grid: Res<TilesSelectionGrid>,
+    r_collection_tile: Res<ResCollectionTile>,
+    r_builder_info: Res<LevelBuilderInfo>,
 ){
     commands.entity(q_tile_creator.single()).despawn_recursive();
 
     // Spawning creator tile (used to edit level).
-    let tile_idx = tiles_selection_grid.selected_idx;
+    let tile_idx = r_builder_info.selected_idx;
     commands.spawn(
         (
             BundleTile{
                 model: SceneBundle {
-                    scene: tiles_selection_grid.tile_vector[tile_idx].clone(),
+                    scene: r_collection_tile.tiles[tile_idx].tile_model.clone(),
                     transform: Transform::from_translation(LEVEL_ORIGIN),
                     ..default()
                 }, 
-                grid_position: GridPosition{
-                    value: IVec2::new(0, 0)
-                }
+                tile_id: r_collection_tile.tiles[tile_idx].tile_id.clone(),
             },
             MarkerTileCreator,
         )
@@ -443,6 +424,7 @@ fn snap_selector_cube_to_cursor_coord(
 
 fn snap_tile_creator_to_cursor_coord(
     r_cursor_to_ground_coord: Res<CursorToGroundCoordonate>,
+    mut r_level_builder_info: ResMut<LevelBuilderInfo>,
     mut q_tile_creator: Query<&mut Transform, With <MarkerTileCreator>>,
     ) {
 
@@ -467,8 +449,10 @@ fn snap_tile_creator_to_cursor_coord(
         0
     );
 
-    let mut transform = q_tile_creator.single_mut();
+    r_level_builder_info.grid_pos_x = grid_pos_x;
+    r_level_builder_info.grid_pos_z = grid_pos_z;
 
+    let mut transform = q_tile_creator.single_mut();
     *transform = Transform::from_translation(
         LEVEL_ORIGIN + Vec3::new(
             grid_size * grid_pos_x as f32,

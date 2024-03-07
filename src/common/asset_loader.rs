@@ -24,7 +24,7 @@ impl Plugin for PluginAssetLoader{
     }
 }
 
-fn load_assets(
+pub fn load_assets(
     mut scene_assets: ResMut<SceneAssets>,
     asset_server: Res<AssetServer>,
 ) {

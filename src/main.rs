@@ -13,6 +13,7 @@ use common::level::PluginLevel;
 use common::camera::PluginCamera;
 use game::debug::PluginDebug;
 use common::asset_loader::PluginAssetLoader;
+use common::tiles::PluginTiles;
 
 use game::game::PluginGame;
 use editor::editor::PluginEditor;
@@ -37,5 +38,6 @@ fn main() {
         .add_plugins(PluginEditor)
         .add_plugins(PluginGame)
         .add_plugins(PluginDebug)
+        .add_plugins(PluginTiles)
         .run();
 }
