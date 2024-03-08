@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use crate::common::asset_loader::SceneAssets;
 use crate::config::{StateLevelLoaded, LEVEL_DEFAULT_SIZE};
 use crate::common::tiles::EnumeTileBehaviour;
 
@@ -10,11 +9,6 @@ pub const LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 #[derive(Resource, Debug, Default)]
 pub struct LevelGrid {
     pub level_grid: [[EnumeTileBehaviour; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
-}
-
-#[derive(Component, Debug, Clone)]
-pub struct GridPosition {
-    pub value: IVec2
 }
 
 #[derive(Component)]
@@ -30,6 +24,7 @@ pub struct PluginLevel;
 
 impl Plugin for PluginLevel{
     fn build(&self, app: &mut App){
+        app.insert_resource(LevelGrid::default());
         app.add_systems(
             PostStartup,
             (
@@ -71,10 +66,12 @@ fn level_loading_prepare(
 
 fn level_loading_load(
     mut commands: Commands,
-    mut state_level_loaded: ResMut<NextState<StateLevelLoaded>>,
-    scene_assets: Res<SceneAssets>,
+    mut s_level_loaded: ResMut<NextState<StateLevelLoaded>>,
+    mut r_level_grid: ResMut<LevelGrid>,
     entity: Query<Entity, With <MarkerTextLoadingLevel>>
 ) {
+    const ARRAY_REPEAT_VALUE:EnumeTileBehaviour = EnumeTileBehaviour::Empty;
+    r_level_grid.level_grid = [[ARRAY_REPEAT_VALUE; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE];
     commands.entity(entity.single()).despawn();
-    state_level_loaded.set(StateLevelLoaded::Loaded);
+    s_level_loaded.set(StateLevelLoaded::Loaded);
 }

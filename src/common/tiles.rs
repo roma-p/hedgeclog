@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::common::asset_loader::{SceneAssets, load_assets};
 
-#[derive(Component, Default, Debug, Clone)]
+#[derive(Component, Default, Debug, Clone, Copy)]
 pub enum EnumTilesId {
     #[default]
     TileIdFloor,
@@ -16,7 +16,7 @@ pub enum EnumTilesId {
     TileIdDesk,
 }
 
-#[derive(Component, Default, Debug, Clone)]
+#[derive(Component, Default, Debug, Clone, Copy)]
 pub enum EnumeTileBehaviour {
     #[default]
     TileBFloor,
@@ -27,7 +27,6 @@ pub enum EnumeTileBehaviour {
     Empty,
 }
 
-// #[derive(Component)]
 pub struct DefinitionTile{
     pub tile_id: EnumTilesId,
     pub tile_model: Handle<Scene>,
@@ -39,12 +38,21 @@ pub struct ResCollectionTile{
     pub tiles: Vec<DefinitionTile>,
 }
 
+#[derive(Component, Debug, Default)]
+pub struct GridPosition {
+    pub x : usize,
+    pub z : usize,
+}
+
 #[derive(Bundle, Default)]
 pub struct BundleTile{
     pub model: SceneBundle,
     pub tile_id: EnumTilesId,
-    // pub grid_position: GridPosition, // TODO: need to this?
+    pub grid_position: GridPosition, 
 }
+
+#[derive(Component)]
+pub struct MarkerTileOnLevel;
 
 pub struct PluginTiles;
 

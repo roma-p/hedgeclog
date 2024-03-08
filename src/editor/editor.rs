@@ -7,8 +7,11 @@ use crate::config::{
     StateGlobal, StateEditorLoaded, StateEditorView,
     TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN,
 };
-use crate::common::level::{GridPosition, LEVEL_ORIGIN};
-use crate::common::tiles::{BundleTile, ResCollectionTile};
+use crate::common::level::{LEVEL_ORIGIN, LevelGrid};
+use crate::common::tiles::{
+    BundleTile, EnumeTileBehaviour, ResCollectionTile, MarkerTileOnLevel, 
+    GridPosition
+};
 use crate::common::camera::MarkerCamera;
 
 const TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER: usize = 4;
@@ -72,6 +75,7 @@ pub struct PluginEditor;
 impl Plugin for PluginEditor{
     fn build(&self, app: &mut App){
         app.insert_resource(TilesSelectionGrid::default())
+            .insert_resource(LevelBuilderInfo::default())
             .insert_resource(CursorToGroundCoordonate::default())
             .add_systems(OnEnter(StateEditorLoaded::Loading), editor_loading_load)
             .add_systems(
@@ -101,6 +105,9 @@ impl Plugin for PluginEditor{
                     ),
                     user_input_editor_tile_selection.run_if(
                         in_state(StateEditorView::TileSelector)
+                    ),
+                    user_input_editor_game.run_if(
+                        in_state(StateEditorView::Game)
                     ),
                     snap_tile_creator_to_cursor_coord.run_if(
                         in_state(StateGlobal::Editor).and_then(
@@ -194,6 +201,10 @@ fn editor_loading_load(
                 ..default()
             }, 
             tile_id: tile.tile_id.clone(),
+            grid_position: GridPosition {
+                x : 0,
+                z : 0,
+            }
         });
 
         if current_col >= TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER - 1{
@@ -257,6 +268,10 @@ fn editor_setup(
                     ..default()
                 }, 
                 tile_id: r_collection_tile.tiles[tile_idx].tile_id.clone(),
+                grid_position: GridPosition {
+                    x : 0,
+                    z : 0,
+                }
             },
             MarkerTileCreator,
         )
@@ -324,16 +339,61 @@ fn user_input_editor_tile_selection(
     mut state_next_editor_view: ResMut<NextState<StateEditorView>>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
+
         r_builder_info.selected_idx = r_tile_selection_grid.current_idx;
         state_next_editor_view.set(StateEditorView::Game);
     }
 }
 
+// TODO NOT IN EDITOR INPUT (run at every frame, lots of query...) use events!
 fn user_input_editor_game(
+    mut commands: Commands,
     buttons: Res<ButtonInput<MouseButton>>,
-    mut r_tile_selection_grid: ResMut<TilesSelectionGrid>,
+    r_level_builder_info: Res<LevelBuilderInfo>,
+    r_collection_tile: Res<ResCollectionTile>,
+    mut r_grid : ResMut<LevelGrid>,
+    q_tile_creator: Query<&Transform, With <MarkerTileCreator>>,
+    q_tiles: Query<(Entity, &GridPosition), With <MarkerTileOnLevel>>
 ) {
     if buttons.just_pressed(MouseButton::Left) {
+
+        let grid_pos_x = r_level_builder_info.grid_pos_x;
+        let grid_pos_z = r_level_builder_info.grid_pos_z;
+
+        let current_tile_behaviour = r_grid.level_grid[grid_pos_x][grid_pos_z];
+        match current_tile_behaviour {
+            EnumeTileBehaviour::Empty => {
+            },
+            _ => {
+                for (entity, grid_position) in q_tiles.iter() {
+                    if grid_pos_x == grid_position.x && grid_pos_z == grid_position.z {
+                        commands.entity(entity).despawn();
+                        break;
+                    }
+                }
+            }
+        }
+
+        let tile = &r_collection_tile.tiles[r_level_builder_info.selected_idx];
+        let transform = q_tile_creator.single();
+        commands.spawn(
+            (
+                BundleTile{
+                    model: SceneBundle {
+                        scene: tile.tile_model.clone(),
+                        transform: transform.clone(),
+                        ..default()
+                    }, 
+                    tile_id: tile.tile_id.clone(),
+                    grid_position: GridPosition {
+                        x : grid_pos_x,
+                        z : grid_pos_z,
+                    }
+                },
+                MarkerTileOnLevel,
+            ),
+        );
+        r_grid.level_grid[grid_pos_x][grid_pos_z] = tile.tile_behaviour;
     }
 }
 
@@ -358,6 +418,10 @@ fn update_tile_creator(
                     ..default()
                 }, 
                 tile_id: r_collection_tile.tiles[tile_idx].tile_id.clone(),
+                grid_position: GridPosition {
+                    x : 0,
+                    z : 0,
+                }
             },
             MarkerTileCreator,
         )
