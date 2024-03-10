@@ -12,10 +12,10 @@ use crate::editor::common::{
 use crate::editor::cursor_to_world::{
     PluginCursorToWorld,
 };
-use crate::editor::view_tile_selection::{
-    PluginEditorViewTileSelection,
+use crate::editor::select_tile::{
+    PluginEditorSelectTile,
 };
-use crate::editor::view_level::PluginEditorViewLevel;
+use crate::editor::add_remove_tile::PluginEditorAddRemoveTile;
 
 const SUBSYSTEM_TO_LOAD_NUMBER: usize = 2;
 
@@ -44,8 +44,8 @@ impl Plugin for PluginEditor{
             // PLUGINS -------------------------------------------------------
             .add_plugins(PluginEditorData)
             .add_plugins(PluginCursorToWorld)
-            .add_plugins(PluginEditorViewLevel)
-            .add_plugins(PluginEditorViewTileSelection)
+            .add_plugins(PluginEditorAddRemoveTile)
+            .add_plugins(PluginEditorSelectTile)
             // LOADING / DISPOSE ---------------------------------------------
             .add_systems(Update, editor_loading_prepare.run_if(
                 in_state(StateGlobal::Editor).and_then(

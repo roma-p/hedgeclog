@@ -40,9 +40,9 @@ struct MarkerTileSelectorCube;
 
 // -- PLUGIN -----------------------------------------------------------------
 
-pub struct PluginEditorViewTileSelection;
+pub struct PluginEditorSelectTile;
 
-impl Plugin for PluginEditorViewTileSelection{
+impl Plugin for PluginEditorSelectTile{
     fn build(&self, app: &mut App){
         app
             .insert_resource(TilesSelectionGrid::default())

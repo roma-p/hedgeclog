@@ -40,9 +40,9 @@ pub struct EventTileCreated;
 
 // -- PLUGIN -----------------------------------------------------------------
 
-pub struct PluginEditorViewLevel;
+pub struct PluginEditorAddRemoveTile;
 
-impl Plugin for PluginEditorViewLevel{
+impl Plugin for PluginEditorAddRemoveTile{
     fn build(&self, app: &mut App){
         app
             .add_event::<EventTileCreatorMoved>()
