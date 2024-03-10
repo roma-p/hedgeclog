@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use crate::config::{StateGlobal, StateEditorLoaded, StateLevelLoaded};
+use crate::config::{StateGlobal, StateLevelLoaded};
+use crate::editor::common::StateEditorLoaded;
 
 pub struct PluginDebug;
 

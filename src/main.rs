@@ -31,8 +31,8 @@ fn main() {
         // Custom plugins.
         .add_plugins(PluginConfig)
         .add_plugins(PluginAssetLoader)
-        .add_plugins(PluginHedghog)
-        .add_plugins(PluginMovement)
+        // .add_plugins(PluginHedghog)
+        // .add_plugins(PluginMovement)
         .add_plugins(PluginLevel)
         .add_plugins(PluginCamera)
         .add_plugins(PluginEditor)

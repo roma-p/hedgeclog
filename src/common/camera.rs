@@ -3,11 +3,14 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use crate::config::{
     StateGlobal,
     StateLevelLoaded,
-    StateEditorView,
+    // StateEditorView,
     TRANSLATION_LEVEL_ORIGIN,
-    TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN,
+    // TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN,
     TRANSLATION_DEFAULT_CAMERA_SHIFT
 };
+
+use crate::editor::common::StateEditorView;
+use crate::editor::common::TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN;
 
 // tiles that actually compose the level
 #[derive(Bundle, Default)]
