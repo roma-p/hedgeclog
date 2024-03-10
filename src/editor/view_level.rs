@@ -51,16 +51,16 @@ impl Plugin for PluginEditorViewLevel{
             .insert_resource(BufferedData::default())
             .add_systems(
                 OnEnter(StateGlobal::Editor),
-                    setup.run_if(in_state(StateEditorLoaded::Loaded))
+                    setup.run_if(in_state(StateEditorLoaded::LoadedNotSetup))
             )
-            .add_systems(OnEnter(StateEditorLoaded::Loaded), setup)
+            .add_systems(OnEnter(StateEditorLoaded::LoadedNotSetup), setup)
             .add_systems(OnExit(StateGlobal::Editor), teardown)
             .add_systems(
                 Update,
                 (
                     user_input
                         .run_if(in_state(StateGlobal::Editor)
-                        .and_then(in_state(StateEditorLoaded::Loaded))),
+                        .and_then(in_state(StateEditorLoaded::LoadedNotSetup))),
                     update_tile_creator_type
                         .run_if(on_event::<EventTileSelectedChanged>()),
                     update_cursor_grid_position,
@@ -77,6 +77,7 @@ fn setup(
     mut commands: Commands,
     r_collection_tile: Res<ResCollectionTile>,
     r_buffered_data: Res<BufferedData>,
+    mut r_level_builder_info: ResMut<LevelBuilderInfo>,
     mut e_tile_creator_moved: EventWriter<EventTileCreatorMoved>,
 ) {
     let tile_data = &r_collection_tile.tiles[r_buffered_data.selected_idx];
@@ -97,6 +98,8 @@ fn setup(
             MarkerTileCreator,
         )
     );
+    r_level_builder_info.grid_pos_x = 0;
+    r_level_builder_info.grid_pos_z = 0;
     e_tile_creator_moved.send(EventTileCreatorMoved);
 }
 

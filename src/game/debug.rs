@@ -9,7 +9,7 @@ impl Plugin for PluginDebug{
         app.add_systems(OnEnter(StateGlobal::Editor), print_mode_editor);
         app.add_systems(OnEnter(StateGlobal::Game), print_mode_game);
         app.add_systems(OnEnter(StateEditorLoaded::Loading), print_loading_editor);
-        app.add_systems(OnEnter(StateEditorLoaded::Loaded), print_loaded_editor);
+        app.add_systems(OnEnter(StateEditorLoaded::LoadedNotSetup), print_loaded_editor);
         app.add_systems(OnEnter(StateLevelLoaded::Loading), print_loading_level);
         app.add_systems(OnEnter(StateLevelLoaded::Loaded),  print_loaded_level);
     } 

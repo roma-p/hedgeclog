@@ -172,7 +172,7 @@ fn user_input(
                 tile_id: r_tile_selection_grid.current_idx
             }
         );
-        s_next_editor_view.set(StateEditorView::Game);
+        s_next_editor_view.set(StateEditorView::Level);
     }
 } 
 
@@ -180,7 +180,7 @@ fn snap_selector_cube_to_cursor_coord(
     r_cursor_to_ground_coord: Res<CursorToGroundCoordonate>,
     mut r_tile_selection_grid: ResMut<TilesSelectionGrid>,
     mut q_selector_cube: Query<&mut Transform, With <MarkerTileSelectorCube>>,
-    ) {
+) {
 
     let local_position = r_cursor_to_ground_coord.global - 
         r_tile_selection_grid.translation_first_tile;

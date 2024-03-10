@@ -11,7 +11,8 @@ pub enum StateEditorLoaded {
     #[default]
     NotLoaded,
     Loading,
-    Loaded,
+    LoadedNotSetup,
+    LoadedAndSetup,
 }
 
 // Used to check if level is loaded or not.
@@ -19,7 +20,7 @@ pub enum StateEditorLoaded {
 #[derive(States, Default, Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum StateEditorView {
     #[default]
-    Game,
+    Level,
     TileSelector,
 }
 

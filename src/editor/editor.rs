@@ -57,9 +57,9 @@ impl Plugin for PluginEditor{
             // SETUP / TEARDOWN ----------------------------------------------
             .add_systems(
                 OnEnter(StateGlobal::Editor),
-                    editor_setup.run_if(in_state(StateEditorLoaded::Loaded))
+                    editor_setup.run_if(in_state(StateEditorLoaded::LoadedNotSetup))
             )
-            .add_systems(OnEnter(StateEditorLoaded::Loaded), editor_setup)
+            .add_systems(OnEnter(StateEditorLoaded::LoadedNotSetup), editor_setup)
             .add_systems(OnExit(StateGlobal::Editor), editor_teardown)
             // USER INPUT ----------------------------------------------------
             .add_systems(Update, user_input_editor_global
@@ -111,7 +111,7 @@ fn editor_loading_load(
         return
     }
     commands.entity(q_text_loading_editor.single()).despawn();
-    s_editor_loaded.set(StateEditorLoaded::Loaded);
+    s_editor_loaded.set(StateEditorLoaded::LoadedNotSetup);
 }
 
 fn editor_setup(
@@ -162,8 +162,8 @@ fn user_input_editor_global(
     if r_keyboard_input.just_pressed(KeyCode::Space) {
         use StateEditorView::*;
         let next = match **s_editor_view {
-            Game => TileSelector,
-            TileSelector => Game,
+            Level => TileSelector,
+            TileSelector => Level,
         };
         s_next_editor_view.set(next);
     }

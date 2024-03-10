@@ -37,7 +37,7 @@ impl Plugin for PluginCamera {
         app.add_systems(OnEnter(StateGlobal::Game), camera_snap_position_default.run_if(
             in_state(StateLevelLoaded::Loaded)));
 
-        app.add_systems(OnEnter(StateEditorView::Game), camera_snap_position_default);
+        app.add_systems(OnEnter(StateEditorView::Level), camera_snap_position_default);
         app.add_systems(OnEnter(StateEditorView::TileSelector), camera_snap_position_editor_tile_selector_view);
     }
 }
