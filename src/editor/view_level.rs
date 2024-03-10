@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use std::{usize, cmp};
 
 use bevy::prelude::*;
@@ -57,7 +58,9 @@ impl Plugin for PluginEditorViewLevel{
             .add_systems(
                 Update,
                 (
-                    user_input,
+                    user_input
+                        .run_if(in_state(StateGlobal::Editor)
+                        .and_then(in_state(StateEditorLoaded::Loaded))),
                     update_tile_creator_type
                         .run_if(on_event::<EventTileSelectedChanged>()),
                     update_cursor_grid_position,
@@ -117,10 +120,15 @@ fn teardown(
 
 fn user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
+    r_keyboard_input: Res<ButtonInput<KeyCode>>,
     mut e_tile_selected_changed: EventWriter<EventTileCreated>,
+    mut q_tile_creator: Query<&mut Transform, With <MarkerTileCreator>>,
 ) {
     if r_mouse_input.just_pressed(MouseButton::Left) {
         e_tile_selected_changed.send(EventTileCreated);
+    } else if r_keyboard_input.just_pressed(KeyCode::KeyR) {
+        let mut transform = q_tile_creator.single_mut();
+        transform.rotate_local_y(PI/2.0);
     }
 } 
 
@@ -252,13 +260,14 @@ fn update_tile_creator_position(
     let grid_size = 2.0;
 
     let mut transform = q_tile_creator.single_mut();
+    let current_rotation = transform.rotation; 
     *transform = Transform::from_translation(
         LEVEL_ORIGIN + Vec3::new(
             grid_size * grid_pos_x as f32,
             0.0,
             grid_size * grid_pos_z as f32,
-        )
-    );
+        ))
+        .with_rotation(current_rotation);
 }
 
 
