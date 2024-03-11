@@ -5,8 +5,10 @@ use bevy::prelude::*;
 use crate::config::StateGlobal;
 use crate::common::tiles::{ResCollectionTile, BundleTile, GridPosition};
 use crate::editor::common::{
-    EventEditorSubSystemLoaded, EventTileSelectedChanged,
-    StateEditorLoaded, StateEditorView,
+    EventEditorSubSystemLoaded,
+    EventTileSelectedChanged,
+    StateEditorLoaded,
+    StateEditorView,
     TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN,
 };
 use crate::editor::cursor_to_world::CursorToGroundCoordonate;
@@ -54,11 +56,13 @@ impl Plugin for PluginEditorSelectTile{
                     // TODO: put all of this in a system set....
                     snap_selector_cube_to_cursor_coord.run_if(
                         in_state(StateGlobal::Editor).and_then(
-                        in_state(StateEditorView::TileSelector))
+                        in_state(StateEditorLoaded::Ready).and_then(
+                        in_state(StateEditorView::TileSelector)))
                     ),
                     user_input.run_if(
                         in_state(StateGlobal::Editor).and_then(
-                        in_state(StateEditorView::TileSelector))
+                        in_state(StateEditorLoaded::Ready).and_then(
+                        in_state(StateEditorView::TileSelector)))
                     ),
                 )
             );

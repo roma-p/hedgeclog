@@ -27,7 +27,7 @@ impl Plugin for PluginCursorToWorld{
             .add_systems(Update,
                 process.run_if(
                     in_state(StateGlobal::Editor).and_then(
-                    in_state(StateEditorLoaded::LoadedNotSetup))
+                    in_state(StateEditorLoaded::Ready))
                 )
             );
          

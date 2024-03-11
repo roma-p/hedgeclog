@@ -6,6 +6,7 @@ use crate::config::StateGlobal;
 use crate::editor::common::{
     PluginEditorData,
     EventEditorSubSystemLoaded,
+    EventEditorSubSystemSetup,
     StateEditorLoaded,
     StateEditorView
 };
@@ -18,6 +19,7 @@ use crate::editor::select_tile::{
 use crate::editor::add_remove_tile::PluginEditorAddRemoveTile;
 
 const SUBSYSTEM_TO_LOAD_NUMBER: usize = 2;
+const SUBSYSTEM_TO_SETUP_NUMBER: usize = 1;
 
 // -- COMPONENTS -------------------------------------------------------------
 
@@ -28,8 +30,9 @@ pub struct MarkerTextLoadingEditor;
 struct MarkerEditorGUI;
 
 #[derive(Resource, Default)]
-struct ResourceLoadedSubSystem {
-    number: usize,
+struct ResourceSubSystemStatus {
+    number_loaded: usize,
+    number_setup: usize,
 }
 
 // -- PLUGIN -----------------------------------------------------------------
@@ -40,30 +43,37 @@ impl Plugin for PluginEditor{
     fn build(&self, app: &mut App){
         app
             // INIT DATA -----------------------------------------------------
-            .insert_resource(ResourceLoadedSubSystem::default())
+            .insert_resource(ResourceSubSystemStatus::default())
             // PLUGINS -------------------------------------------------------
             .add_plugins(PluginEditorData)
             .add_plugins(PluginCursorToWorld)
             .add_plugins(PluginEditorAddRemoveTile)
             .add_plugins(PluginEditorSelectTile)
             // LOADING / DISPOSE ---------------------------------------------
-            .add_systems(Update, editor_loading_prepare.run_if(
+            .add_systems(Update, load_prepare.run_if(
                 in_state(StateGlobal::Editor).and_then(
                 in_state(StateEditorLoaded::NotLoaded)))
             )
-            .add_systems(Update, editor_loading_load
+            .add_systems(Update, load_do
                 .run_if(on_event::<EventEditorSubSystemLoaded>())
             )
             // SETUP / TEARDOWN ----------------------------------------------
             .add_systems(
                 OnEnter(StateGlobal::Editor),
-                    editor_setup.run_if(in_state(StateEditorLoaded::LoadedNotSetup))
+                    setup_prepare.run_if(in_state(StateEditorLoaded::LoadedNotSetup))
             )
-            .add_systems(OnEnter(StateEditorLoaded::LoadedNotSetup), editor_setup)
+            .add_systems(
+                OnEnter(StateEditorLoaded::JustLoadedNeedSetup),
+                setup_prepare
+            )
+            .add_systems(Update, setup_do
+                .run_if(on_event::<EventEditorSubSystemSetup>())
+            )
             .add_systems(OnExit(StateGlobal::Editor), editor_teardown)
             // USER INPUT ----------------------------------------------------
-            .add_systems(Update, user_input_editor_global
-                .run_if(in_state(StateGlobal::Editor))
+            .add_systems(Update, user_input_editor_global .run_if(
+                in_state(StateGlobal::Editor).and_then(
+                in_state(StateEditorLoaded::Ready)))
             );
     }
 }
@@ -72,7 +82,7 @@ impl Plugin for PluginEditor{
 
 // -- loading --
 
-fn editor_loading_prepare(
+fn load_prepare(
     mut commands: Commands,
     mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
 ) {
@@ -97,26 +107,65 @@ fn editor_loading_prepare(
     s_editor_loaded.set(StateEditorLoaded::Loading);
 }
 
-fn editor_loading_load(
+fn load_do(
     mut commands: Commands,
     mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     q_text_loading_editor: Query<Entity, With <MarkerTextLoadingEditor>>,
-    mut r_loaded_sub_system: ResMut<ResourceLoadedSubSystem>,
+    mut r_sub_system_status: ResMut<ResourceSubSystemStatus>,
     mut e_editor_subsystem_loaded: EventReader<EventEditorSubSystemLoaded>,
 ) {
     for _ in e_editor_subsystem_loaded.read() {
-        r_loaded_sub_system.number += 1;
+        r_sub_system_status.number_loaded += 1;
     }
-    if r_loaded_sub_system.number != SUBSYSTEM_TO_LOAD_NUMBER {
+    if r_sub_system_status.number_loaded != SUBSYSTEM_TO_LOAD_NUMBER {
         return
     }
     commands.entity(q_text_loading_editor.single()).despawn();
-    s_editor_loaded.set(StateEditorLoaded::LoadedNotSetup);
+    s_editor_loaded.set(StateEditorLoaded::JustLoadedNeedSetup);
 }
 
-fn editor_setup(
+fn setup_prepare(
     mut commands: Commands,
+    mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
 ) {
+    commands.spawn(
+        (
+            TextBundle::from_section(
+                "Loading editor...",
+                TextStyle {
+                    font_size: 25.0,
+                    ..default()
+                },
+            )
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                top: Val::Px(10.0),
+                left: Val::Px(10.0),
+                ..default()
+            }),
+            MarkerTextLoadingEditor,
+        )
+    );
+    s_editor_loaded.set(StateEditorLoaded::LoadedAndSetuping);
+}
+
+fn setup_do(
+    mut commands: Commands,
+    mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
+    q_text_loading_editor: Query<Entity, With <MarkerTextLoadingEditor>>,
+    mut r_sub_system_status: ResMut<ResourceSubSystemStatus>,
+    mut e_editor_subsystem_setup: EventReader<EventEditorSubSystemSetup>,
+) {
+
+    for _ in e_editor_subsystem_setup.read() {
+        r_sub_system_status.number_setup += 1;
+    }
+    if r_sub_system_status.number_setup != SUBSYSTEM_TO_SETUP_NUMBER {
+        return
+    }
+
+
+    commands.entity(q_text_loading_editor.single()).despawn();
     commands.spawn(
         (
             TextBundle::from_section(
@@ -135,12 +184,17 @@ fn editor_setup(
             MarkerEditorGUI,
         )
     );
+    s_editor_loaded.set(StateEditorLoaded::Ready);
 }
 
 fn editor_teardown(
     mut commands: Commands,
     q_editor_text: Query<Entity, With <MarkerEditorGUI>>,
+    mut r_sub_system_status: ResMut<ResourceSubSystemStatus>,
+    mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
 ) {
+    r_sub_system_status.number_setup = 0;
+    s_editor_loaded.set(StateEditorLoaded::LoadedNotSetup);
     commands.entity(q_editor_text.single()).despawn();
 }
 

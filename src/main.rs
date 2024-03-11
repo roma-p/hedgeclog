@@ -18,6 +18,8 @@ use common::tiles::PluginTiles;
 use game::game::PluginGame;
 use editor::editor::PluginEditor;
 
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
+
 fn main() {
     App::new()
         // Bevy built-ins.
@@ -27,7 +29,7 @@ fn main() {
             color: Color::default(),
             brightness: 200.0,
         })
-
+        // .add_plugins(WorldInspectorPlugin::new())
         // Custom plugins.
         .add_plugins(PluginConfig)
         .add_plugins(PluginAssetLoader)

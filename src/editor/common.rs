@@ -12,7 +12,9 @@ pub enum StateEditorLoaded {
     NotLoaded,
     Loading,
     LoadedNotSetup,
-    LoadedAndSetup,
+    LoadedAndSetuping,
+    Ready,
+    JustLoadedNeedSetup,
 }
 
 // Used to check if level is loaded or not.
@@ -28,6 +30,9 @@ pub enum StateEditorView {
 pub struct EventEditorSubSystemLoaded;
 
 #[derive(Event)]
+pub struct EventEditorSubSystemSetup;
+
+#[derive(Event)]
 pub struct EventTileSelectedChanged{
     pub tile_id: usize
 }
@@ -41,6 +46,7 @@ impl Plugin for PluginEditorData{
             .init_state::<StateEditorLoaded>()
             .init_state::<StateEditorView>()
             .add_event::<EventEditorSubSystemLoaded>()
+            .add_event::<EventEditorSubSystemSetup>()
             .add_event::<EventTileSelectedChanged>();
     }
 }

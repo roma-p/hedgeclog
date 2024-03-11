@@ -5,11 +5,18 @@ use bevy::prelude::*;
 
 use crate::config::StateGlobal;
 use crate::common::tiles::{
-    BundleTile, EnumeTileBehaviour, ResCollectionTile, MarkerTileOnLevel, 
+    BundleTile,
+    EnumeTileBehaviour,
+    ResCollectionTile,
+    MarkerTileOnLevel, 
     GridPosition
 };
 use crate::common::level::{LEVEL_ORIGIN, LevelGrid};
-use crate::editor::common::{EventTileSelectedChanged, StateEditorLoaded};
+use crate::editor::common::{
+    EventTileSelectedChanged,
+    EventEditorSubSystemSetup,
+    StateEditorLoaded
+};
 use crate::editor::cursor_to_world::CursorToGroundCoordonate;
 
 
@@ -49,21 +56,19 @@ impl Plugin for PluginEditorAddRemoveTile{
             .add_event::<EventTileCreated>()
             .insert_resource(LevelBuilderInfo::default())
             .insert_resource(BufferedData::default())
-            .add_systems(
-                OnEnter(StateGlobal::Editor),
-                    setup.run_if(in_state(StateEditorLoaded::LoadedNotSetup))
-            )
-            .add_systems(OnEnter(StateEditorLoaded::LoadedNotSetup), setup)
+            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
             .add_systems(OnExit(StateGlobal::Editor), teardown)
             .add_systems(
                 Update,
                 (
                     user_input
                         .run_if(in_state(StateGlobal::Editor)
-                        .and_then(in_state(StateEditorLoaded::LoadedNotSetup))),
+                        .and_then(in_state(StateEditorLoaded::Ready))),
+                    update_cursor_grid_position
+                        .run_if(in_state(StateGlobal::Editor)
+                        .and_then(in_state(StateEditorLoaded::Ready))),
                     update_tile_creator_type
                         .run_if(on_event::<EventTileSelectedChanged>()),
-                    update_cursor_grid_position,
                     update_tile_creator_position
                         .run_if(on_event::<EventTileCreatorMoved>()),
                     create_tile
@@ -79,6 +84,7 @@ fn setup(
     r_buffered_data: Res<BufferedData>,
     mut r_level_builder_info: ResMut<LevelBuilderInfo>,
     mut e_tile_creator_moved: EventWriter<EventTileCreatorMoved>,
+    mut e_editor_subsystem_setup: EventWriter<EventEditorSubSystemSetup>,
 ) {
     let tile_data = &r_collection_tile.tiles[r_buffered_data.selected_idx];
     commands.spawn(
@@ -101,6 +107,7 @@ fn setup(
     r_level_builder_info.grid_pos_x = 0;
     r_level_builder_info.grid_pos_z = 0;
     e_tile_creator_moved.send(EventTileCreatorMoved);
+    e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
 }
 
 fn teardown(
@@ -142,8 +149,8 @@ fn update_tile_creator_type(
     mut r_buffered_data: ResMut<BufferedData>,
     mut e_tile_selected_changed: EventReader<EventTileSelectedChanged>,
 ){
-    commands.entity(q_tile_creator.single()).despawn_recursive();
 
+    commands.entity(q_tile_creator.single()).despawn_recursive();
     for ev in e_tile_selected_changed.read() {
         r_buffered_data.selected_idx = ev.tile_id;
     }
