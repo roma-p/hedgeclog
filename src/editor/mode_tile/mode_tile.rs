@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::render::view::visibility;
 use crate::config::{StateGlobal};
 use crate::editor::common::{
     StateEditorMode, StateEditorView
@@ -47,8 +48,10 @@ fn enter_mode_tile(
 fn exit_mode_tile(
     mut q_tile_creator: Query< &mut Visibility, With <MarkerTileCreator>>
 ) {
-    let mut visibility = q_tile_creator.single_mut();
-    *visibility = Visibility::Hidden;
+
+    if let Ok(mut visibility) = q_tile_creator.get_single_mut() {
+        *visibility = Visibility::Hidden;
+    }
     // TODO force camera view to main view... :
     // currently done on camera... to be changed...
 }
