@@ -13,7 +13,7 @@ use crate::editor::common::{
 };
 use crate::editor::cursor_to_world::CursorToGroundCoordonate;
 
-use super::common::SSetEditor;
+use crate::editor::common::SSetEditor;
 
 const TILE_SELECTOR_VIEW_TILE_COLUMN_NUMBER: usize = 4;
 const TILE_SPACING: f32 = 0.5;
@@ -61,8 +61,8 @@ impl Plugin for PluginEditorSelectTile{
                         in_state(StateEditorView::TileSelector))
                     ),
                     user_input
-                        .in_set(SSetEditor::UserInput)
                         .run_if(in_state(StateEditorView::TileSelector))
+                        .in_set(SSetEditor::UserInput)
                 )
             );
     }

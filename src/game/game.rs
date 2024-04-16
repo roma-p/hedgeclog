@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::config::StateGlobal;
+use crate::config::{StateGlobal, StateUserInputAllowed};
 
 pub struct PluginGame;
 
@@ -8,7 +8,9 @@ impl Plugin for PluginGame{
         app.add_systems(
             Update, 
             (
-                user_input_game_global.run_if(in_state(StateGlobal::Game)),
+                user_input_game_global
+                    .run_if(in_state(StateGlobal::Game)
+                    .and_then(in_state(StateUserInputAllowed::Allowed))),
             )
         );
     }
@@ -21,7 +23,7 @@ fn user_input_game_global(
 
 ) {
     if keyboard_input.pressed(KeyCode::KeyE) {
-        state_global.set(StateGlobal::Editor); 
+        state_global.set(StateGlobal::EditorRequested); 
     }
     // add move hedghog, restart, undo.
 }

@@ -24,11 +24,8 @@ impl Plugin for PluginCursorToWorld{
         app
             .insert_resource(CursorToGroundCoordonate::default())
             .add_systems(OnEnter(StateEditorLoaded::Loading) , load)
-            .add_systems(Update,
-                process.run_if(
-                    in_state(StateGlobal::Editor).and_then(
-                    in_state(StateEditorLoaded::Ready))
-                )
+            .add_systems(Update, process.run_if(
+                in_state(StateGlobal::EditorRunning))
             );
          
     }

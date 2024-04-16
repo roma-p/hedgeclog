@@ -13,10 +13,7 @@ use crate::common::tiles::{
 };
 use crate::common::level::{LEVEL_ORIGIN, LevelGrid};
 use crate::editor::common::{
-    EventTileSelectedChanged,
-    EventEditorSubSystemSetup,
-    StateEditorLoaded,
-    SSetEditor,
+    EventEditorSubSystemSetup, EventTileSelectedChanged, SSetEditor, StateEditorLoaded, StateEditorMode
 };
 use crate::editor::cursor_to_world::CursorToGroundCoordonate;
 
@@ -64,9 +61,10 @@ impl Plugin for PluginEditorAddRemoveTile{
                 (
                     user_input
                         .in_set(SSetEditor::UserInput)
-                        .run_if(in_state(StateEditorView::TileSelector)),
+                        .run_if(in_state(StateEditorMode::tile)),
                     update_cursor_grid_position
-                        .run_if(in_state(StateGlobal::EditorRunning)),
+                        .run_if(in_state(StateGlobal::EditorRunning)
+                        .and_then(in_state(StateEditorMode::tile))),
                     update_tile_creator_type
                         .run_if(on_event::<EventTileSelectedChanged>()),
                     update_tile_creator_position

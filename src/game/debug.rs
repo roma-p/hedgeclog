@@ -6,7 +6,7 @@ pub struct PluginDebug;
 
 impl Plugin for PluginDebug{
     fn build(&self, app: &mut App){
-        app.add_systems(OnEnter(StateGlobal::Editor), print_mode_editor);
+        app.add_systems(OnEnter(StateGlobal::EditorRunning), print_mode_editor);
         app.add_systems(OnEnter(StateGlobal::Game), print_mode_game);
         app.add_systems(OnEnter(StateEditorLoaded::Loading), print_editor_loading);
         app.add_systems(OnEnter(StateEditorLoaded::Loading), print_editor_loading);

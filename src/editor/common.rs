@@ -17,6 +17,25 @@ pub enum StateEditorLoaded {
     JustLoadedNeedSetup,
 }
 
+#[derive(States, Default, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+pub enum StateEditorMode {
+    #[default]
+    NoSet,
+    normal,
+    tile,
+    hedgehog,
+    test,
+}
+
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum SSetEditor {
+    UserInput,
+    InModeNormal,
+    InModeTile,
+    InModeHedgehog,
+    InModeTry,
+}
+
 // Used to check if level is loaded or not.
 // Use when loading new level.
 #[derive(States, Default, Debug, Hash, PartialEq, Eq, Clone, Copy)]
@@ -37,6 +56,9 @@ pub struct EventTileSelectedChanged{
     pub tile_id: usize
 }
 
+#[derive(Component)]
+pub struct MarkerEditorGUI;
+
 pub struct PluginEditorData;
 
 impl Plugin for PluginEditorData{
@@ -45,6 +67,7 @@ impl Plugin for PluginEditorData{
             // INIT DATA -----------------------------------------------------
             .init_state::<StateEditorLoaded>()
             .init_state::<StateEditorView>()
+            .init_state::<StateEditorMode>()
             .add_event::<EventEditorSubSystemLoaded>()
             .add_event::<EventEditorSubSystemSetup>()
             .add_event::<EventTileSelectedChanged>();

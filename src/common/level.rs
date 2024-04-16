@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::config::{StateLevelLoaded, LEVEL_DEFAULT_SIZE};
+use crate::config::{StateLevelLoaded, LEVEL_DEFAULT_SIZE, StateUserInputAllowed};
 use crate::common::tiles::EnumeTileBehaviour;
 
 pub const LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
@@ -68,10 +68,12 @@ fn level_loading_load(
     mut commands: Commands,
     mut s_level_loaded: ResMut<NextState<StateLevelLoaded>>,
     mut r_level_grid: ResMut<LevelGrid>,
+    mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     entity: Query<Entity, With <MarkerTextLoadingLevel>>
 ) {
     const ARRAY_REPEAT_VALUE:EnumeTileBehaviour = EnumeTileBehaviour::Empty;
     r_level_grid.level_grid = [[ARRAY_REPEAT_VALUE; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE];
     commands.entity(entity.single()).despawn();
     s_level_loaded.set(StateLevelLoaded::Loaded);
+    s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
