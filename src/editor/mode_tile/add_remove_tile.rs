@@ -81,7 +81,6 @@ fn setup(
     r_collection_tile: Res<ResCollectionTile>,
     r_buffered_data: Res<BufferedData>,
     mut r_level_builder_info: ResMut<LevelBuilderInfo>,
-    mut e_tile_creator_moved: EventWriter<EventTileCreatorMoved>,
     mut e_editor_subsystem_setup: EventWriter<EventEditorSubSystemSetup>,
 ) {
     let tile_data = &r_collection_tile.tiles[r_buffered_data.selected_idx];
@@ -104,7 +103,6 @@ fn setup(
     );
     r_level_builder_info.grid_pos_x = 0;
     r_level_builder_info.grid_pos_z = 0;
-    e_tile_creator_moved.send(EventTileCreatorMoved);
     e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
 }
 
