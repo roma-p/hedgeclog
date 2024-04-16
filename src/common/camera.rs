@@ -11,6 +11,7 @@ use crate::config::{
 
 use crate::editor::common::StateEditorView;
 use crate::editor::common::TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN;
+use crate::editor::common::StateEditorMode;
 
 // tiles that actually compose the level
 #[derive(Bundle, Default)]
@@ -32,13 +33,30 @@ pub struct PluginCamera;
 
 impl Plugin for PluginCamera {
     fn build(&self, app: &mut App){
-        app.add_systems(Startup, spawn_camera);
-        app.add_systems(OnEnter(StateLevelLoaded::Loaded), camera_snap_position_default);
-        app.add_systems(OnEnter(StateGlobal::Game), camera_snap_position_default.run_if(
-            in_state(StateLevelLoaded::Loaded)));
-
-        app.add_systems(OnEnter(StateEditorView::Level), camera_snap_position_default);
-        app.add_systems(OnEnter(StateEditorView::TileSelector), camera_snap_position_editor_tile_selector_view);
+        app
+            .add_systems(Startup, spawn_camera)
+            .add_systems(
+                OnEnter(StateLevelLoaded::Loaded), 
+                camera_snap_position_default
+            )
+            .add_systems(
+                OnEnter(StateGlobal::Game),
+                camera_snap_position_default
+                .run_if(in_state(StateLevelLoaded::Loaded))
+            )
+            .add_systems(
+                OnEnter(StateEditorView::Level),
+                camera_snap_position_default
+            )
+            // TODO: put this elsewhere!
+            .add_systems(
+                OnExit(StateEditorMode::tile),
+                camera_snap_position_default
+            )
+            .add_systems(
+                OnEnter(StateEditorView::TileSelector),
+                camera_snap_position_editor_tile_selector_view
+            );
     }
 }
 
