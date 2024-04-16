@@ -90,6 +90,7 @@ fn setup(
                 model: SceneBundle {
                     scene: tile_data.tile_model.clone(),
                     transform: Transform::from_translation(LEVEL_ORIGIN),
+                    visibility: Visibility::Hidden,
                     ..default()
                 }, 
                 tile_id: tile_data.tile_id.clone(),
