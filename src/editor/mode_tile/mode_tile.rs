@@ -4,7 +4,11 @@ use crate::editor::common::{
     StateEditorMode, StateEditorView
 };
 use crate::editor::mode_tile::select_tile::PluginEditorSelectTile;
-use crate::editor::mode_tile::add_remove_tile::PluginEditorAddRemoveTile;
+use crate::editor::mode_tile::add_remove_tile::{
+    PluginEditorAddRemoveTile,
+    MarkerTileCreator,
+    EventTileCreatorMoved
+};
 
 use crate::editor::common::SSetEditor;
 
@@ -20,6 +24,8 @@ impl Plugin for PluginEditorModeTile{
         app
             .add_plugins(PluginEditorSelectTile)
             .add_plugins(PluginEditorAddRemoveTile)
+            .add_systems(OnEnter(StateEditorMode::tile), enter_mode_tile)
+            .add_systems(OnExit(StateEditorMode::tile), exit_mode_tile)
             .add_systems(Update, user_input_editor_mode_tile
                 .in_set(SSetEditor::UserInput)
                 .run_if(in_state(StateEditorMode::tile))
@@ -28,6 +34,24 @@ impl Plugin for PluginEditorModeTile{
 }
 
 // -- SYSTEM -----------------------------------------------------------------
+
+fn enter_mode_tile(
+    mut q_tile_creator: Query< &mut Visibility, With <MarkerTileCreator>>,
+    mut e_tile_creator_moved: EventWriter<EventTileCreatorMoved>,
+) {
+    let mut visibility = q_tile_creator.single_mut();
+    *visibility = Visibility::Visible;
+    e_tile_creator_moved.send(EventTileCreatorMoved);
+}
+
+fn exit_mode_tile(
+    mut q_tile_creator: Query< &mut Visibility, With <MarkerTileCreator>>
+) {
+    let mut visibility = q_tile_creator.single_mut();
+    *visibility = Visibility::Hidden;
+    // TODO force camera view to main view... :
+    // currently done on camera... to be changed...
+}
 
 fn user_input_editor_mode_tile(
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
