@@ -39,26 +39,31 @@ current mode: "#;
 
 const TEXT_MODE_HEADER_2: &str = r#"
 
-available commands: 
-
 q:   quit editor
 
-ESC: mode normal
-t:   mode "tile"
-h:   mode "hedgehog"
-x:   mode "try"
+* mode transition:
+
+  ESC: mode normal
+  t:   mode "tile"
+  h:   mode "hedgehog"
+  x:   mode "try"
+
+* camera: 
+
+  shift + Left click: pan camera
+  shift + Right click: zoom camera
 
 "#;
 
 const TEXT_MODE_NORMAL: &str = r#"
 "#;
 
-const TEXT_MODE_TILE: &str = r#" Tile command
+const TEXT_MODE_TILE: &str = r#"* tile mode
 
-SPACE:       choose tile
-r:           rotate tile
-Left click:  add tile.
-Right click: remove tile.
+  SPACE:       choose tile
+  r:           rotate tile
+  Left click:  add tile.
+  Right click: remove tile.
 "#;
 
 // -- SYTEMS -----------------------------------------------------------------
