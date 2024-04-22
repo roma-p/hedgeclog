@@ -3,7 +3,7 @@ use std::usize;
 use bevy::prelude::*;
 
 pub const TRANSLATION_LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
-pub const TRANSLATION_DEFAULT_CAMERA_SHIFT: Vec3 = Vec3::new(9.0, 9.0, 9.0);
+pub const TRANSLATION_DEFAULT_CAMERA_SHIFT: Vec3 = Vec3::new(9.0, 12.0, 9.0);
 
 pub const LEVEL_DEFAULT_SIZE: usize = 10;
 

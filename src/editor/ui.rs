@@ -50,9 +50,8 @@ q:   quit editor
 
 * camera: 
 
-  shift + Left click: pan camera
-  shift + Right click: zoom camera
-
+  arrows/hjkl: pan
+  ,/;: zoom/unzoom
 "#;
 
 const TEXT_MODE_NORMAL: &str = r#"

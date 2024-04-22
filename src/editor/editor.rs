@@ -1,25 +1,18 @@
-use std::usize;
-
 use bevy::prelude::*;
 
 use crate::config::{StateGlobal, StateUserInputAllowed};
 use crate::editor::common::{
     PluginEditorData,
-    EventEditorSubSystemLoaded,
-    EventEditorSubSystemSetup,
-    StateEditorLoaded,
-    StateEditorView,
     StateEditorMode,
 };
 use crate::editor::cursor_to_world::PluginCursorToWorld;
 use crate::editor::ui::PluginEditorUI;
 use crate::editor::mode_tile::mode_tile::PluginEditorModeTile;
 use crate::editor::load_setup::PluginLoadSetup;
+use crate::editor::move_camera::PluginEditorCameraMovement;
 
 use crate::editor::common::SSetEditor;
 
-const SUBSYSTEM_TO_LOAD_NUMBER: usize = 2;
-const SUBSYSTEM_TO_SETUP_NUMBER: usize = 2;
 
 // -- PLUGIN -----------------------------------------------------------------
 
@@ -34,6 +27,7 @@ impl Plugin for PluginEditor{
             .add_plugins(PluginEditorUI)
             .add_plugins(PluginEditorModeTile)
             .add_plugins(PluginLoadSetup)
+            .add_plugins(PluginEditorCameraMovement)
             // USER INPUT ----------------------------------------------------
             .add_systems(Update, user_input_editor_global.in_set(SSetEditor::UserInput))
             .configure_sets(Update, SSetEditor::UserInput .run_if(

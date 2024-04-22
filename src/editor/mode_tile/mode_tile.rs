@@ -1,6 +1,4 @@
 use bevy::prelude::*;
-use bevy::render::view::visibility;
-use crate::config::{StateGlobal};
 use crate::editor::common::{
     StateEditorMode, StateEditorView
 };

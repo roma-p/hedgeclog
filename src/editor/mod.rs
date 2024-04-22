@@ -4,3 +4,6 @@ pub mod common;
 pub mod ui;
 pub mod mode_tile;
 pub mod load_setup;
+pub mod move_camera;
+
+
