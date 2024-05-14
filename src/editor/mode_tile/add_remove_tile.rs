@@ -43,6 +43,9 @@ pub struct EventTileCreatorMoved;
 #[derive(Event)]
 pub struct EventTileCreated;
 
+#[derive(Event)]
+pub struct EventTileRemoved;
+
 // -- PLUGIN -----------------------------------------------------------------
 
 pub struct PluginEditorAddRemoveTile;
@@ -52,6 +55,7 @@ impl Plugin for PluginEditorAddRemoveTile{
         app
             .add_event::<EventTileCreatorMoved>()
             .add_event::<EventTileCreated>()
+            .add_event::<EventTileRemoved>()
             .insert_resource(LevelBuilderInfo::default())
             .insert_resource(BufferedData::default())
             .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
@@ -70,7 +74,9 @@ impl Plugin for PluginEditorAddRemoveTile{
                     update_tile_creator_position
                         .run_if(on_event::<EventTileCreatorMoved>()),
                     create_tile
-                        .run_if(on_event::<EventTileCreated>())
+                        .run_if(on_event::<EventTileCreated>()),
+                    remove_tile
+                        .run_if(on_event::<EventTileRemoved>()),
                 )
             );
     }
@@ -128,13 +134,17 @@ fn teardown(
 fn user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut e_tile_selected_changed: EventWriter<EventTileCreated>,
+    mut e_tile_created: EventWriter<EventTileCreated>,
+    mut e_tile_removed: EventWriter<EventTileRemoved>,
     mut q_tile_creator: Query<&mut Transform, With <MarkerTileCreator>>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
 ) {
     if r_mouse_input.just_pressed(MouseButton::Left) {
         s_user_input_allowed.set(StateUserInputAllowed::NotAllowed);  // -> set to Allowed by add_remove_tile.create_tile
-        e_tile_selected_changed.send(EventTileCreated);
+        e_tile_created.send(EventTileCreated);
+    } else if r_mouse_input.just_pressed(MouseButton::Right) {
+        s_user_input_allowed.set(StateUserInputAllowed::NotAllowed);  // -> set to Allowed by add_remove_tile.remove_tile
+        e_tile_removed.send(EventTileRemoved);
     } else if r_keyboard_input.just_pressed(KeyCode::KeyR) {
         let mut transform = q_tile_creator.single_mut();
         transform.rotate_local_y(PI/2.0);
@@ -322,5 +332,19 @@ fn create_tile(
         ),
     );
     r_grid.level_grid[grid_pos_x][grid_pos_z] = tile.tile_behaviour;
+    s_user_input_allowed.set(StateUserInputAllowed::Allowed);
+}
+
+fn remove_tile(
+    mut commands: Commands,
+    r_level_builder_info: Res<LevelBuilderInfo>,
+    mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
+) {
+
+    let current_hover_tile = r_level_builder_info.current_hover_tile;
+    if current_hover_tile.is_some(){
+        // FIXME: crash here: verify that entity still exists...
+        commands.entity(current_hover_tile.unwrap()).despawn();
+    }
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
