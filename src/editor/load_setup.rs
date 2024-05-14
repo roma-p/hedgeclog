@@ -9,6 +9,7 @@ use crate::editor::common::{
     StateEditorMode,
 };
 
+// TODO: explain this and list all systems loading in //
 const SUBSYSTEM_TO_LOAD_NUMBER: usize = 2;
 const SUBSYSTEM_TO_SETUP_NUMBER: usize = 2;
 
