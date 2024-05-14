@@ -2,16 +2,13 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use crate::config::{
     StateGlobal,
     StateLevelLoaded,
-    // StateEditorView,
     TRANSLATION_LEVEL_ORIGIN,
-    // TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN,
     TRANSLATION_DEFAULT_CAMERA_SHIFT
 };
 
 use crate::common::level::ZOOM_LEVEL;
 
 use crate::editor::common::StateEditorView;
-use crate::editor::common::TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN;
 use crate::editor::common::StateEditorMode;
 
 #[derive(Bundle, Default)]
@@ -25,9 +22,6 @@ pub struct MarkerCamera;
 
 #[derive(Component)]
 pub struct MarkerCameraInfoDefault;
-
-#[derive(Component)]
-pub struct MarkerCameraInfoEditorTileSelectorView;
 
 #[derive(Event, Debug)]
 pub struct EventCameraSnap{
@@ -52,17 +46,8 @@ impl Plugin for PluginCamera {
                 .run_if(in_state(StateLevelLoaded::Loaded))
             )
             .add_systems(
-                OnEnter(StateEditorView::Level),
-                camera_snap_position_default
-            )
-            // TODO: put this elsewhere!
-            .add_systems(
                 OnExit(StateEditorMode::tile),
                 camera_snap_position_default
-            )
-            .add_systems(
-                OnEnter(StateEditorView::TileSelector),
-                camera_snap_position_editor_tile_selector_view
             )
             .add_systems(
                 Update,
@@ -103,44 +88,12 @@ fn spawn_camera(mut commands: Commands) {
             MarkerCameraInfoDefault
         )
     );
-    commands.spawn(
-        (
-            BundleCameraInfo{
-                projection: OrthographicProjection {
-                    scaling_mode: ScalingMode::FixedVertical(12.0),
-                    ..default()
-                }.into(),
-                transform: Transform::from_translation(TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN
-                    .mul_add(Vec3::ONE, TRANSLATION_DEFAULT_CAMERA_SHIFT))
-                    .looking_at(TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN, Vec3::Y),
-                ..default()
-            },
-            MarkerCameraInfoEditorTileSelectorView
-        )
-            
-    );
 }
 
-fn camera_snap_position_default(
+pub fn camera_snap_position_default(
     camera_info_query: Query<
         (&Transform, &OrthographicProjection,),
         (With <MarkerCameraInfoDefault>, Without<MarkerCamera>)
-    >,
-    mut e_camera_snap: EventWriter<EventCameraSnap>,
-) {
-    let (src_transform, src_projection) = camera_info_query.single();
-    e_camera_snap.send(
-        EventCameraSnap{
-            transform: src_transform.clone(),
-            projection: src_projection.clone(),
-        }
-    );
-}
-
-fn camera_snap_position_editor_tile_selector_view(
-    camera_info_query: Query<
-        (&Transform, &OrthographicProjection),
-        (With <MarkerCameraInfoEditorTileSelectorView>, Without<MarkerCamera>)
     >,
     mut e_camera_snap: EventWriter<EventCameraSnap>,
 ) {

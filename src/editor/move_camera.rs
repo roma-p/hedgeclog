@@ -1,12 +1,22 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::ScalingMode};
+use crate::config::TRANSLATION_DEFAULT_CAMERA_SHIFT;
 use crate::common::camera::{
     MarkerCamera,
+    BundleCameraInfo,
     translate_camera,
-    zoom_camera, ZoomCameraMode
+    zoom_camera, ZoomCameraMode, 
+    EventCameraSnap,
+    camera_snap_position_default
+};
+use crate::editor::common::{
+    EventEditorSubSystemLoaded, StateEditorLoaded,
+    TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN, StateEditorView
 };
 use crate::config::StateGlobal;
 use crate::common::tiles::TILE_SIZE;
 
+#[derive(Component)]
+pub struct MarkerCameraInfoEditorTileSelectorView;
 
 // -- PLUGIN -----------------------------------------------------------------
 
@@ -17,12 +27,43 @@ pub struct PluginEditorCameraMovement;
 impl Plugin for PluginEditorCameraMovement{
     fn build(&self, app: &mut App){
         app
+            .add_systems(OnEnter(StateEditorLoaded::Loading) , load)
+            .add_systems(
+                OnEnter(StateEditorView::Level),
+                camera_snap_position_default
+            )
             .add_systems(
                 Update,
                 pan_camera 
                 .run_if(in_state(StateGlobal::EditorRunning))
+            )
+            .add_systems(
+                OnEnter(StateEditorView::TileSelector),
+                camera_snap_position_editor_tile_selector_view
             );
     }
+}
+
+pub fn load(
+    mut commands: Commands,
+    mut e_editor_subsystem_loaded: EventWriter<EventEditorSubSystemLoaded>,
+) {
+    commands.spawn(
+        (
+            BundleCameraInfo{
+                projection: OrthographicProjection {
+                    scaling_mode: ScalingMode::FixedVertical(12.0),
+                    ..default()
+                }.into(),
+                transform: Transform::from_translation(TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN
+                    .mul_add(Vec3::ONE, TRANSLATION_DEFAULT_CAMERA_SHIFT))
+                    .looking_at(TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN, Vec3::Y),
+                ..default()
+            },
+            MarkerCameraInfoEditorTileSelectorView
+        )
+    );
+    e_editor_subsystem_loaded.send(EventEditorSubSystemLoaded);
 }
 
 fn pan_camera(
@@ -67,3 +108,20 @@ fn pan_camera(
     }
 
 }
+
+fn camera_snap_position_editor_tile_selector_view(
+    camera_info_query: Query<
+        (&Transform, &OrthographicProjection),
+        (With <MarkerCameraInfoEditorTileSelectorView>, Without<MarkerCamera>)
+    >,
+    mut e_camera_snap: EventWriter<EventCameraSnap>,
+) {
+    let (src_transform, src_projection) = camera_info_query.single();
+    e_camera_snap.send(
+        EventCameraSnap{
+            transform: src_transform.clone(),
+            projection: src_projection.clone(),
+        }
+    );
+}
+

@@ -10,8 +10,15 @@ use crate::editor::common::{
 };
 
 // TODO: explain this and list all systems loading in //
-const SUBSYSTEM_TO_LOAD_NUMBER: usize = 2;
+
+const SUBSYSTEM_TO_LOAD_NUMBER: usize = 3;
+// - editor.cursor_to_world.load
+// - editor.select_tile.load
+// - editor.move_camera.load
+
 const SUBSYSTEM_TO_SETUP_NUMBER: usize = 2;
+// - editor.add_remove_tile.setup
+// - editor.ui.setup
 
 // -- COMPONENTS -------------------------------------------------------------
 
