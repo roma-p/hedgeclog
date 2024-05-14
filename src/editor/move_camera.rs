@@ -1,5 +1,9 @@
 use bevy::prelude::*;
-use crate::common::camera::{MarkerCamera, MarkerCameraInfoDefault};
+use crate::common::camera::{
+    MarkerCamera,
+    translate_camera,
+    zoom_camera, ZoomCameraMode
+};
 use crate::config::StateGlobal;
 use crate::common::tiles::TILE_SIZE;
 
@@ -24,52 +28,42 @@ impl Plugin for PluginEditorCameraMovement{
 fn pan_camera(
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
     mut camera_query: Query<
-         &mut Transform,
-        (With <MarkerCamera>, Without<MarkerCameraInfoDefault>)
+        (&mut Projection, &mut Transform),
+        With <MarkerCamera>
     >,
 ){
 
-    let mut cam_transform = camera_query.single_mut();
+    let (mut cam_projection, mut cam_transform) = camera_query.single_mut();
 
     if r_keyboard_input.just_pressed(KeyCode::KeyH) || r_keyboard_input.just_pressed(KeyCode::ArrowLeft) {
-       cam_transform.translation = cam_transform.translation.mul_add(
-            Vec3::ONE,
-            Vec3{
-                x: TILE_SIZE,
-                y: 0.0,
-                z: -TILE_SIZE
-            }
+        translate_camera(
+            &mut cam_transform,
+            Vec3{ x: -TILE_SIZE, y: 0.0, z: TILE_SIZE }
         );
     }
-    if r_keyboard_input.just_pressed(KeyCode::KeyL) || r_keyboard_input.just_pressed(KeyCode::ArrowRight) {
-       cam_transform.translation = cam_transform.translation.mul_add(
-            Vec3::ONE,
-            Vec3{
-                x: -TILE_SIZE,
-                y: 0.0,
-                z: TILE_SIZE
-            }
+    else if r_keyboard_input.just_pressed(KeyCode::KeyL) || r_keyboard_input.just_pressed(KeyCode::ArrowRight) {
+        translate_camera(
+            &mut cam_transform,
+            Vec3{ x: TILE_SIZE, y: 0.0, z: -TILE_SIZE }
         );
     }
-    if r_keyboard_input.just_pressed(KeyCode::KeyK) || r_keyboard_input.just_pressed(KeyCode::ArrowUp) {
-       cam_transform.translation = cam_transform.translation.mul_add(
-            Vec3::ONE,
-            Vec3{
-                x: -TILE_SIZE,
-                y: 0.0,
-                z: -TILE_SIZE
-            }
+    else if r_keyboard_input.just_pressed(KeyCode::KeyK) || r_keyboard_input.just_pressed(KeyCode::ArrowUp) {
+        translate_camera(
+            &mut cam_transform,
+            Vec3{ x: -TILE_SIZE, y: 0.0, z: -TILE_SIZE }
         );
     }
-    if r_keyboard_input.just_pressed(KeyCode::KeyJ) || r_keyboard_input.just_pressed(KeyCode::ArrowDown) {
-       cam_transform.translation = cam_transform.translation.mul_add(
-            Vec3::ONE,
-            Vec3{
-                x: TILE_SIZE,
-                y: 0.0,
-                z: TILE_SIZE
-            }
+    else if r_keyboard_input.just_pressed(KeyCode::KeyJ) || r_keyboard_input.just_pressed(KeyCode::ArrowDown) {
+        translate_camera(
+            &mut cam_transform,
+            Vec3{ x: TILE_SIZE, y: 0.0, z: TILE_SIZE }
         );
+    }
+    else if r_keyboard_input.just_pressed(KeyCode::KeyB) {
+        zoom_camera(&mut cam_projection, ZoomCameraMode::Zoom);
+    }
+    else if r_keyboard_input.just_pressed(KeyCode::KeyN) {
+        zoom_camera(&mut cam_projection, ZoomCameraMode::Unzoom);
     }
 
 }
