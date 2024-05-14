@@ -45,13 +45,13 @@ pub enum StateEditorView {
     TileSelector,
 }
 
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub struct EventEditorSubSystemLoaded;
 
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub struct EventEditorSubSystemSetup;
 
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub struct EventTileSelectedChanged{
     pub tile_id: usize
 }
