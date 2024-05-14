@@ -51,7 +51,8 @@ q:   quit editor
 * camera: 
 
   arrows/hjkl: pan
-  ,/;: zoom/unzoom
+  b/n: zoom/unzoom
+
 "#;
 
 const TEXT_MODE_NORMAL: &str = r#"
