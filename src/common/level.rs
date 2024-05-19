@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::config::{StateLevelLoaded, LEVEL_DEFAULT_SIZE, StateUserInputAllowed};
 use crate::common::tiles::EnumeTileBehaviour;
+use crate::common::hedgehog::EnumHedgehogOnGrid;
 
 pub const LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
@@ -60,6 +61,7 @@ impl ZoomLevel {
 #[derive(Resource, Debug, Default)]
 pub struct LevelGrid {
     pub level_grid: [[EnumeTileBehaviour; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
+    pub hedgehog_grid: [[EnumHedgehogOnGrid; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
 }
 
 #[derive(Component)]

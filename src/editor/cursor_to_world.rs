@@ -1,6 +1,13 @@
+use std::{usize, cmp};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::editor::common::{EventEditorSubSystemLoaded, StateEditorLoaded};
+use crate::common::level::LEVEL_ORIGIN;
+use crate::editor::common::{
+    EventCursorGridPositionChanged,
+    EventEditorSubSystemLoaded,
+    EventEditorSubSystemSetup,
+    StateEditorLoaded,
+};
 use crate::common::camera::MarkerCamera;
 use crate::config::StateGlobal;
 
@@ -10,6 +17,12 @@ use crate::config::StateGlobal;
 pub struct CursorToGroundCoordonate {
     pub global: Vec3,
     pub local: Vec2,
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct CursorGridPosition {
+    pub grid_pos_x: usize,
+    pub grid_pos_z: usize,
 }
 
 #[derive(Component)]
@@ -23,11 +36,18 @@ impl Plugin for PluginCursorToWorld{
     fn build(&self, app: &mut App){
         app
             .insert_resource(CursorToGroundCoordonate::default())
-            .add_systems(OnEnter(StateEditorLoaded::Loading) , load)
-            .add_systems(Update, process.run_if(
-                in_state(StateGlobal::EditorRunning))
+            .insert_resource(CursorGridPosition::default())
+            .add_systems(OnEnter(StateEditorLoaded::Loading), load)
+            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
+            .add_systems(
+                Update,
+                (
+                    update_cursor_to_world
+                        .run_if(in_state(StateGlobal::EditorRunning)),
+                    update_cursor_to_grid_position
+                        .run_if(in_state(StateGlobal::EditorRunning))
+                )
             );
-         
     }
 }
 
@@ -55,10 +75,20 @@ fn dispose(
     commands.entity(q_plane.single()).despawn();
 }
 
+fn setup(
+    mut commands: Commands,
+    mut r_cursor_grid_position: ResMut<CursorGridPosition>,
+    mut e_editor_subsystem_setup: EventWriter<EventEditorSubSystemSetup>,
+) {
+    r_cursor_grid_position.grid_pos_x = 0;
+    r_cursor_grid_position.grid_pos_z = 0;
+    e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
+}
 
 // TODO: do i really need the plane (that can be moved...) 
 // or do i only need the inversed matrix?
-fn process(
+// TODO: rename this as it now have more than one func...
+fn update_cursor_to_world(
     mut cursor_to_ground_coord: ResMut<CursorToGroundCoordonate>,
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MarkerCamera>>,
@@ -91,3 +121,42 @@ fn process(
     let local_cursor = inverse_transform_matrix.transform_point3(global_cursor);
     cursor_to_ground_coord.local = local_cursor.xz();
 }
+
+// TODO: rename update_cursor_grid
+fn update_cursor_to_grid_position(
+    mut r_cursor_grid_position: ResMut<CursorGridPosition>,
+    r_cursor_to_ground_coordonate: Res<CursorToGroundCoordonate>,
+    mut e_cursor_grid_position_changed: EventWriter<EventCursorGridPositionChanged>,
+) {
+    let previous_grid_pos_x = r_cursor_grid_position.grid_pos_x;
+    let previous_grid_pos_z = r_cursor_grid_position.grid_pos_z;
+
+    let local_position = r_cursor_to_ground_coordonate.global - LEVEL_ORIGIN;
+
+    let grid_size = 2.0;
+    const LEVEL_SIZE:usize = 8;
+
+    let grid_pos_x = cmp::max(
+        cmp::min(
+            ((local_position.x + (grid_size / 2.0)) / grid_size) as usize,
+            LEVEL_SIZE - 1
+        ),
+        0
+    );
+
+    let grid_pos_z = cmp::max(
+        cmp::min(
+            ((local_position.z + (grid_size / 2.0)) / grid_size) as usize,
+            LEVEL_SIZE - 1
+        ),
+        0
+    );
+
+    r_cursor_grid_position.grid_pos_x = grid_pos_x;
+    r_cursor_grid_position.grid_pos_z = grid_pos_z;
+
+    if previous_grid_pos_x != grid_pos_x || previous_grid_pos_z != grid_pos_z {
+        e_cursor_grid_position_changed.send(EventCursorGridPositionChanged);
+    }
+}
+

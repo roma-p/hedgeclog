@@ -10,6 +10,7 @@ use crate::editor::ui::PluginEditorUI;
 use crate::editor::mode_tile::mode_tile::PluginEditorModeTile;
 use crate::editor::load_setup::PluginLoadSetup;
 use crate::editor::move_camera::PluginEditorCameraMovement;
+use crate::editor::mode_hedgehog::mode_hedgehog::PluginEditorModeHedgeclog;
 
 use crate::editor::common::SSetEditor;
 
@@ -26,6 +27,7 @@ impl Plugin for PluginEditor{
             .add_plugins(PluginCursorToWorld)
             .add_plugins(PluginEditorUI)
             .add_plugins(PluginEditorModeTile)
+            .add_plugins(PluginEditorModeHedgeclog)
             .add_plugins(PluginLoadSetup)
             .add_plugins(PluginEditorCameraMovement)
             // USER INPUT ----------------------------------------------------
@@ -54,12 +56,17 @@ fn user_input_editor_global(
     }
     // TILE MODE
     if r_keyboard_input.just_pressed(KeyCode::KeyT) {
-        snext_editor_mode.set(StateEditorMode::tile); 
+        snext_editor_mode.set(StateEditorMode::Tile); 
+        return
+    }
+    // HEDGECLOG MODE
+    if r_keyboard_input.just_pressed(KeyCode::KeyY) {
+        snext_editor_mode.set(StateEditorMode::Hedgehog); 
         return
     }
     // NORMAL MODE
     if r_keyboard_input.just_pressed(KeyCode::Escape) {
-        snext_editor_mode.set(StateEditorMode::normal); 
+        snext_editor_mode.set(StateEditorMode::Normal); 
         return
     }
 } 

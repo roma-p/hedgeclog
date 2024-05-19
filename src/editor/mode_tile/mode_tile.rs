@@ -1,15 +1,18 @@
 use bevy::prelude::*;
 use crate::editor::common::{
-    StateEditorMode, StateEditorView
+    StateEditorMode,
+    StateEditorView, 
+    EventCursorGridPositionChanged
 };
 use crate::editor::mode_tile::select_tile::PluginEditorSelectTile;
 use crate::editor::mode_tile::add_remove_tile::{
     PluginEditorAddRemoveTile,
+    TileBuilderInfo,
     MarkerTileCreator,
-    EventTileCreatorMoved
 };
 
 use crate::editor::common::SSetEditor;
+use crate::common::tiles::MarkerTileOnLevel;
 
 
 // -- PLUGIN -----------------------------------------------------------------
@@ -23,11 +26,11 @@ impl Plugin for PluginEditorModeTile{
         app
             .add_plugins(PluginEditorSelectTile)
             .add_plugins(PluginEditorAddRemoveTile)
-            .add_systems(OnEnter(StateEditorMode::tile), enter_mode_tile)
-            .add_systems(OnExit(StateEditorMode::tile), exit_mode_tile)
+            .add_systems(OnEnter(StateEditorMode::Tile), enter_mode_tile)
+            .add_systems(OnExit(StateEditorMode::Tile), exit_mode_tile)
             .add_systems(Update, user_input_editor_mode_tile
                 .in_set(SSetEditor::UserInput)
-                .run_if(in_state(StateEditorMode::tile))
+                .run_if(in_state(StateEditorMode::Tile))
             );
     }
 }
@@ -36,19 +39,29 @@ impl Plugin for PluginEditorModeTile{
 
 fn enter_mode_tile(
     mut q_tile_creator: Query< &mut Visibility, With <MarkerTileCreator>>,
-    mut e_tile_creator_moved: EventWriter<EventTileCreatorMoved>,
+    mut e_tile_creator_moved: EventWriter<EventCursorGridPositionChanged>,
 ) {
     let mut visibility = q_tile_creator.single_mut();
     *visibility = Visibility::Visible;
-    e_tile_creator_moved.send(EventTileCreatorMoved);
+    e_tile_creator_moved.send(EventCursorGridPositionChanged);
 }
 
 fn exit_mode_tile(
-    mut q_tile_creator: Query< &mut Visibility, With <MarkerTileCreator>>
+    mut q_tile_creator: Query< &mut Visibility, (With <MarkerTileCreator>, Without<MarkerTileOnLevel>)>,
+    r_level_builder_info: ResMut<TileBuilderInfo>,
+    mut q_tiles: Query<(Entity, &mut Visibility), (With <MarkerTileOnLevel>, Without<MarkerTileCreator>)>
 ) {
 
     if let Ok(mut visibility) = q_tile_creator.get_single_mut() {
         *visibility = Visibility::Hidden;
+    }
+    if !r_level_builder_info.current_hover_tile.is_some() {
+        return
+    }
+    for (entity, mut visibility) in q_tiles.iter_mut() {
+        if entity == r_level_builder_info.current_hover_tile.unwrap() {
+            *visibility = Visibility::Visible;
+        }
     }
     // TODO force camera view to main view... :
     // currently done on camera... to be changed...

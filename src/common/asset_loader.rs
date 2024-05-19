@@ -15,16 +15,33 @@ pub struct SceneAssets {
     pub title_desk: Handle<Scene>,
 }
 
+#[derive(Resource, Debug, Default, Clone)]
+pub struct HedgehogAssets {
+    pub sprite_idle: Handle<Image>,
+}
+
+
 pub struct PluginAssetLoader;
 
 impl Plugin for PluginAssetLoader{
     fn build(&self, app: &mut App){
-        app.init_resource::<SceneAssets>()
-            .add_systems(Startup, load_assets);
+        app
+            .init_resource::<SceneAssets>()
+            .init_resource::<HedgehogAssets>()
+            .add_systems(Startup, (load_scene_assets, load_hedgehog_assets));
     }
 }
 
-pub fn load_assets(
+pub fn load_hedgehog_assets(
+    mut hedgehog_assets: ResMut<HedgehogAssets>,
+    asset_server: Res<AssetServer>,
+) {
+    *hedgehog_assets = HedgehogAssets {
+        sprite_idle: asset_server.load("hedgehog/hed_schema_1.1.png"),
+    };
+}
+
+pub fn load_scene_assets(
     mut scene_assets: ResMut<SceneAssets>,
     asset_server: Res<AssetServer>,
 ) {

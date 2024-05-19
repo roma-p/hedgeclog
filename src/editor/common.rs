@@ -21,19 +21,20 @@ pub enum StateEditorLoaded {
 pub enum StateEditorMode {
     #[default]
     NoSet,
-    normal,
-    tile,
-    hedgehog,
-    test,
+    Normal,
+    Tile,
+    Hedgehog,
+    Test,
 }
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SSetEditor {
     UserInput,
-    InModeNormal,
-    InModeTile,
-    InModeHedgehog,
-    InModeTry,
+    // TODO -> implement this.
+    // InModeNormal,
+    // InModeTile,
+    // InModeHedgehog,
+    // InModeTry,
 }
 
 // Used to check if level is loaded or not.
@@ -50,6 +51,9 @@ pub struct EventEditorSubSystemLoaded;
 
 #[derive(Event, Debug)]
 pub struct EventEditorSubSystemSetup;
+
+#[derive(Event)]
+pub struct EventCursorGridPositionChanged;
 
 #[derive(Event, Debug)]
 pub struct EventTileSelectedChanged{
@@ -68,6 +72,7 @@ impl Plugin for PluginEditorData{
             .init_state::<StateEditorLoaded>()
             .init_state::<StateEditorView>()
             .init_state::<StateEditorMode>()
+            .add_event::<EventCursorGridPositionChanged>()
             .add_event::<EventEditorSubSystemLoaded>()
             .add_event::<EventEditorSubSystemSetup>()
             .add_event::<EventTileSelectedChanged>();

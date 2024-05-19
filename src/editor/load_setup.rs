@@ -16,9 +16,11 @@ const SUBSYSTEM_TO_LOAD_NUMBER: usize = 3;
 // - editor.select_tile.load
 // - editor.move_camera.load
 
-const SUBSYSTEM_TO_SETUP_NUMBER: usize = 2;
+const SUBSYSTEM_TO_SETUP_NUMBER: usize = 4;
 // - editor.add_remove_tile.setup
+// - editor.add_remove_hedgehog.setup
 // - editor.ui.setup
+// - editor.cursor_to_world.setup
 
 // -- COMPONENTS -------------------------------------------------------------
 
@@ -139,7 +141,7 @@ fn setup_prepare(
     );
     s_editor_loaded.set(StateEditorLoaded::LoadedAndSetuping);
     s_user_input_allowed.set(StateUserInputAllowed::NotAllowed);
-    snext_editor_mode.set(StateEditorMode::normal);
+    snext_editor_mode.set(StateEditorMode::Normal);
 }
 
 fn setup_do(
