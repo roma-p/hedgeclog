@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use core::f32::consts::PI;
 
 use crate::common::common::GridPosition;
-use crate::common::asset_loader::HedgehogAssets;
 
 #[derive(Bundle, Default)]
 pub struct BundleHedgehog{
@@ -15,8 +14,8 @@ pub enum EnumHedgehogOnGrid {
     #[default]
     Empty,
     HedgehogAlive,
-    HedgehogDeadBurnt,
-    HedgehogDeadTooClose,
+    // HedgehogDeadBurnt,
+    // HedgehogDeadTooClose,
 }
 
 #[derive(Component)]
@@ -31,7 +30,6 @@ pub struct ResHedgeHogInfo {
 
 impl Plugin for PluginHedghog{
     fn build(&self, app: &mut App){
-        // app.add_systems(Startup, spawn_hedgehog);
         app
             .init_resource::<ResHedgeHogInfo>()
             .add_systems(Startup, init_hedgehog_info);
@@ -45,20 +43,10 @@ fn init_hedgehog_info(mut r_hedgehog_info: ResMut<ResHedgeHogInfo>) {
         .mul_transform(Transform::from_translation(Vec3{x:-0.4, y:1.5, z:1.3}));  // positionning it on the tiles
 }
 
-fn spawn_hedgehog(
-        mut commands: Commands,
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
-        mut r_hedgehog: Res<HedgehogAssets>
-) {
-    // let hedgehog_material = materials.add(r_hedgehog.sprite_idle.clone());
-    // commands.spawn(
-    //     BundleHedgehog {
-    //         model: PbrBundle {
-    //             mesh: meshes.add(Mesh::from(Plane3d{normal: Direction3d::X})),
-    //             material: hedgehog_material,
-    //             ..Default::default()
-    //         },
-    //     }
-    // );
-}
+// fn spawn_hedgehog(
+//         commands: Commands,
+//         meshes: ResMut<Assets<Mesh>>,
+//         materials: ResMut<Assets<StandardMaterial>>,
+//         r_hedgehog: Res<HedgehogAssets>
+// ) {
+// }

@@ -10,6 +10,7 @@ use crate::editor::common::{
 };
 use crate::common::camera::MarkerCamera;
 use crate::config::StateGlobal;
+use crate::common::tiles::TILE_SIZE;
 
 // -- COMPONENT --------------------------------------------------------------
 
@@ -68,15 +69,16 @@ pub fn load(
     e_editor_subsystem_loaded.send(EventEditorSubSystemLoaded);
 }
 
-fn dispose(
-    mut commands: Commands,
-    q_plane: Query<Entity, With<MarkerGroundPlane>>,
-) {
-    commands.entity(q_plane.single()).despawn();
-}
+// -> TODO USEME
+// fn dispose(
+//     mut commands: Commands,
+//     q_plane: Query<Entity, With<MarkerGroundPlane>>,
+// ) {
+//     commands.entity(q_plane.single()).despawn();
+// }
 
 fn setup(
-    mut commands: Commands,
+    _commands: Commands,
     mut r_cursor_grid_position: ResMut<CursorGridPosition>,
     mut e_editor_subsystem_setup: EventWriter<EventEditorSubSystemSetup>,
 ) {
@@ -133,12 +135,11 @@ fn update_cursor_to_grid_position(
 
     let local_position = r_cursor_to_ground_coordonate.global - LEVEL_ORIGIN;
 
-    let grid_size = 2.0;
     const LEVEL_SIZE:usize = 8;
 
     let grid_pos_x = cmp::max(
         cmp::min(
-            ((local_position.x + (grid_size / 2.0)) / grid_size) as usize,
+            ((local_position.x + (TILE_SIZE / 2.0)) / TILE_SIZE) as usize,
             LEVEL_SIZE - 1
         ),
         0
@@ -146,7 +147,7 @@ fn update_cursor_to_grid_position(
 
     let grid_pos_z = cmp::max(
         cmp::min(
-            ((local_position.z + (grid_size / 2.0)) / grid_size) as usize,
+            ((local_position.z + (TILE_SIZE / 2.0)) / TILE_SIZE) as usize,
             LEVEL_SIZE - 1
         ),
         0

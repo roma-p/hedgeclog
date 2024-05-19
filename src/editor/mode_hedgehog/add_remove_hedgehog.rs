@@ -19,7 +19,7 @@ use crate::editor::common::{
 use crate::common::level::{LevelGrid, LEVEL_ORIGIN};
 use crate::editor::cursor_to_world::CursorGridPosition;
 
-use crate::common::tiles::EnumeTileBehaviour;
+use crate::common::tiles::{EnumeTileBehaviour, TILE_SIZE};
 
 // -- COMPONENTS / RESSOURCES STATES -----------------------------------------
 
@@ -169,13 +169,12 @@ fn update_hedgehog_creator_position(
         z: grid_pos_z,
     };
 
-    let grid_size = 2.0;
     let mut transform = q_hedgehog_creator.single_mut();
     *transform = Transform::from_translation(
         LEVEL_ORIGIN + Vec3::new(
-                grid_size * grid_pos_x as f32,
+                TILE_SIZE * grid_pos_x as f32,
                 0.0,
-                grid_size * grid_pos_z as f32,
+                TILE_SIZE * grid_pos_z as f32,
         )
     );
     *transform = transform.mul_transform(r_hedgehog_info.transform_shift);

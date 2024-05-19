@@ -24,7 +24,7 @@ pub enum StateEditorMode {
     Normal,
     Tile,
     Hedgehog,
-    Test,
+    // Test,
 }
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]

@@ -67,6 +67,5 @@ fn user_input_editor_global(
     // NORMAL MODE
     if r_keyboard_input.just_pressed(KeyCode::Escape) {
         snext_editor_mode.set(StateEditorMode::Normal); 
-        return
     }
 } 

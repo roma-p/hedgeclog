@@ -9,7 +9,8 @@ use crate::common::tiles::{
     BundleTile,
     EnumeTileBehaviour,
     ResCollectionTile,
-    MarkerTileOnLevel
+    MarkerTileOnLevel, 
+    TILE_SIZE
 };
 use crate::common::level::{LEVEL_ORIGIN, LevelGrid};
 use crate::editor::common::{
@@ -241,15 +242,13 @@ fn update_tile_creator_position(
            z: grid_pos_z,
     };
 
-    let grid_size = 2.0;
-
     let mut transform = q_tile_creator.single_mut();
     let current_rotation = transform.rotation; 
     *transform = Transform::from_translation(
         LEVEL_ORIGIN + Vec3::new(
-            grid_size * grid_pos_x as f32,
+            TILE_SIZE * grid_pos_x as f32,
             0.0,
-            grid_size * grid_pos_z as f32,
+            TILE_SIZE * grid_pos_z as f32,
         ))
         .with_rotation(current_rotation);
 }

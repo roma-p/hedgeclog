@@ -23,7 +23,6 @@ impl ZoomLevel {
             ZoomLevel::NORMAL => Some(ZoomLevel::BIG),
             ZoomLevel::BIG => Some(ZoomLevel::REALLYBIG),
             ZoomLevel::REALLYBIG => Some(ZoomLevel::REALLYBIG),
-            _ => None
         }
     }
 
@@ -34,7 +33,6 @@ impl ZoomLevel {
             ZoomLevel::NORMAL => Some(ZoomLevel::SMALL),
             ZoomLevel::SMALL => Some(ZoomLevel::REALLYSMALL),
             ZoomLevel::REALLYSMALL => Some(ZoomLevel::REALLYSMALL),
-            _ => None
         }
     }
 
@@ -53,7 +51,6 @@ impl ZoomLevel {
             I32_BIG => Some(ZoomLevel::BIG),
             I32_REALLYBIG => Some(ZoomLevel::REALLYBIG),
             _ => None
-            // _ => Some(ZOOM_LEVEL::NORMAL)  // DEFAULTING TO ZERO, FIXME: rather panic?
         }
     }
 }

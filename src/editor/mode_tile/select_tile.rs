@@ -4,7 +4,7 @@ use std::{usize, cmp};
 use bevy::prelude::*;
 use crate::config::{StateGlobal, StateUserInputAllowed};
 use  crate::common::common::GridPosition;
-use crate::common::tiles::{ResCollectionTile, BundleTile};
+use crate::common::tiles::{ResCollectionTile, BundleTile, TILE_SIZE};
 use crate::editor::common::{
     EventEditorSubSystemLoaded,
     EventTileSelectedChanged,
@@ -141,7 +141,7 @@ pub fn load(
 
     // 3. Spawning cube used to select tiles in selector view.
 
-    let selector_cube_size = 2.0 + TILE_SPACING / 2.0;
+    let selector_cube_size = TILE_SIZE + TILE_SPACING / 2.0;
     commands.spawn(
         (
             PbrBundle {
@@ -157,10 +157,12 @@ pub fn load(
     e_editor_subsystem_loaded.send(EventEditorSubSystemLoaded);
 }
 
-fn dispose(
-    mut commands: Commands,
-) {
-}
+
+// -> TODO USEME
+// fn dispose(
+//     _commands: Commands,
+// ) {
+// }
 
 fn user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
@@ -191,7 +193,7 @@ fn snap_selector_cube_to_cursor_coord(
     let local_position = r_cursor_to_ground_coord.global - 
         r_tile_selection_grid.translation_first_tile;
 
-    let grid_size = 2.0 + TILE_SPACING / 2.0;
+    let grid_size = TILE_SIZE + TILE_SPACING / 2.0;
 
     let grid_pos_x = cmp::max(
         cmp::min(
@@ -226,7 +228,7 @@ fn snap_selector_cube_to_cursor_coord(
 
     let mut transform = q_selector_cube.single_mut();
 
-    let grid_size = 2.0 + TILE_SPACING;
+    let grid_size = TILE_SIZE + TILE_SPACING;
 
     *transform = Transform::from_translation(
         r_tile_selection_grid.translation_first_tile + Vec3::new(

@@ -3,7 +3,7 @@ use  crate::common::common::GridPosition;
 use crate::common::asset_loader::{SceneAssets, load_scene_assets};
 
 pub const TILE_SIZE: f32 = 2.0;
-pub const TILE_WIDTH: f32 = 0.3;
+// pub const TILE_WIDTH: f32 = 0.3;
 
 #[derive(Component, Default, Debug, Clone, Copy)]
 pub enum EnumTilesId {
