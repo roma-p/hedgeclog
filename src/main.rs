@@ -7,7 +7,6 @@ use bevy::prelude::*;
 
 use config::PluginConfig;
 
-use common::movement::PluginMovement;
 use common::hedgehog::PluginHedghog;
 use common::level::PluginLevel;
 use common::camera::PluginCamera;
@@ -18,8 +17,6 @@ use common::tiles::PluginTiles;
 use game::game::PluginGame;
 use editor::editor::PluginEditor;
 
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
-
 fn main() {
     App::new()
         // Bevy built-ins.
@@ -29,12 +26,10 @@ fn main() {
             color: Color::default(),
             brightness: 200.0,
         })
-        // .add_plugins(WorldInspectorPlugin::new())
         // Custom plugins.
         .add_plugins(PluginConfig)
         .add_plugins(PluginAssetLoader)
-        // .add_plugins(PluginHedghog)
-        // .add_plugins(PluginMovement)
+        .add_plugins(PluginHedghog)
         .add_plugins(PluginLevel)
         .add_plugins(PluginCamera)
         .add_plugins(PluginEditor)

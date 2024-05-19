@@ -37,15 +37,6 @@ fn print_editor_loading(
     info!("Loading editor: {:?} ", s_editor_loaded.get());
 }
 
-
-fn print_loading_editor() {
-    info!("Loading editor...");
-}
-
-fn print_loaded_editor() {
-    info!("Loaded editor.");
-}
-
 fn print_loading_level() {
     info!("Loading level...");
 }
@@ -53,9 +44,3 @@ fn print_loading_level() {
 fn print_loaded_level() {
     info!("Loaded level.");
 }
-
-// fn print_hedgehog_position(mut query: Query<(Entity, &Transform)>){
-//     for (entity, transform) in query.iter_mut() {
-//         info!("entity {:?} is at position {:?},", entity, transform)
-//     }
-// }

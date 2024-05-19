@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::config::{StateGlobal, StateUserInputAllowed};
+use crate::config::StateGlobal;
 
 use crate::editor::common::{
     StateEditorLoaded,
@@ -20,11 +20,11 @@ impl Plugin for PluginEditorUI{
             .add_systems(OnExit(StateGlobal::EditorRunning), teardown)
             .add_systems(OnEnter(StateGlobal::EditorRunning), text_by_mode_normal)  // FIXME: hack! shall be removed.
             .add_systems(
-                OnEnter(StateEditorMode::normal),
+                OnEnter(StateEditorMode::Normal),
                 text_by_mode_normal.run_if(in_state(StateGlobal::EditorRunning))
             )
             .add_systems(
-                OnEnter(StateEditorMode::tile),
+                OnEnter(StateEditorMode::Tile),
                 text_by_mode_tile.run_if(in_state(StateGlobal::EditorRunning))
             );
 
