@@ -6,9 +6,8 @@ use crate::config::{
     TRANSLATION_DEFAULT_CAMERA_SHIFT
 };
 
-use crate::common::level::ZOOM_LEVEL;
+use crate::common::level::ZoomLevel;
 
-use crate::editor::common::StateEditorView;
 use crate::editor::common::StateEditorMode;
 
 #[derive(Bundle, Default)]
@@ -46,14 +45,12 @@ impl Plugin for PluginCamera {
                 .run_if(in_state(StateLevelLoaded::Loaded))
             )
             .add_systems(
-                OnExit(StateEditorMode::tile),
+                OnExit(StateEditorMode::Tile),
                 camera_snap_position_default
             )
             .add_systems(
                 Update,
-                (
-                    snap_camera.run_if(on_event::<EventCameraSnap>())
-                )
+                snap_camera.run_if(on_event::<EventCameraSnap>())
             );
     }
 }
@@ -147,19 +144,19 @@ pub fn zoom_camera(cam_projection: &mut Mut<Projection>, mode: ZoomCameraMode) {
         _ => 0
     };
 
-    let current_zoom_level: ZOOM_LEVEL = match ZOOM_LEVEL::get_from_i32(vertical_size) {
+    let current_zoom_level: ZoomLevel = match ZoomLevel::get_from_i32(vertical_size) {
         Some(v) => v,
-        None => ZOOM_LEVEL::NORMAL
+        None => ZoomLevel::NORMAL
     };
 
-    let new_zoom_level_result: Option<ZOOM_LEVEL>;
+    let new_zoom_level_result: Option<ZoomLevel>;
 
     match mode {
-        ZoomCameraMode::Zoom => new_zoom_level_result = ZOOM_LEVEL::zoom(&current_zoom_level),
-        ZoomCameraMode::Unzoom => new_zoom_level_result = ZOOM_LEVEL::unzoom(&current_zoom_level)
+        ZoomCameraMode::Zoom => new_zoom_level_result = ZoomLevel::zoom(&current_zoom_level),
+        ZoomCameraMode::Unzoom => new_zoom_level_result = ZoomLevel::unzoom(&current_zoom_level)
     }
 
-    let new_zoom_level: ZOOM_LEVEL = match new_zoom_level_result {
+    let new_zoom_level: ZoomLevel = match new_zoom_level_result {
         Some(v) => v,
         None => panic!()
     };

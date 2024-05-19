@@ -6,7 +6,7 @@ use crate::common::tiles::EnumeTileBehaviour;
 
 pub const LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
-pub enum ZOOM_LEVEL {
+pub enum ZoomLevel {
     REALLYSMALL = 6,
     SMALL = 10,
     NORMAL = 12,
@@ -14,43 +14,43 @@ pub enum ZOOM_LEVEL {
     REALLYBIG = 20,
 }
 
-impl ZOOM_LEVEL {
-    pub fn unzoom(&self) -> Option<ZOOM_LEVEL> {
+impl ZoomLevel {
+    pub fn unzoom(&self) -> Option<ZoomLevel> {
         match self {
-            ZOOM_LEVEL::REALLYSMALL => Some(ZOOM_LEVEL::SMALL),
-            ZOOM_LEVEL::SMALL => Some(ZOOM_LEVEL::NORMAL),
-            ZOOM_LEVEL::NORMAL => Some(ZOOM_LEVEL::BIG),
-            ZOOM_LEVEL::BIG => Some(ZOOM_LEVEL::REALLYBIG),
-            ZOOM_LEVEL::REALLYBIG => Some(ZOOM_LEVEL::REALLYBIG),
+            ZoomLevel::REALLYSMALL => Some(ZoomLevel::SMALL),
+            ZoomLevel::SMALL => Some(ZoomLevel::NORMAL),
+            ZoomLevel::NORMAL => Some(ZoomLevel::BIG),
+            ZoomLevel::BIG => Some(ZoomLevel::REALLYBIG),
+            ZoomLevel::REALLYBIG => Some(ZoomLevel::REALLYBIG),
             _ => None
         }
     }
 
-    pub fn zoom(&self) -> Option<ZOOM_LEVEL> {
+    pub fn zoom(&self) -> Option<ZoomLevel> {
         match self {
-            ZOOM_LEVEL::REALLYBIG => Some(ZOOM_LEVEL::BIG),
-            ZOOM_LEVEL::BIG => Some(ZOOM_LEVEL::NORMAL),
-            ZOOM_LEVEL::NORMAL => Some(ZOOM_LEVEL::SMALL),
-            ZOOM_LEVEL::SMALL => Some(ZOOM_LEVEL::REALLYSMALL),
-            ZOOM_LEVEL::REALLYSMALL => Some(ZOOM_LEVEL::REALLYSMALL),
+            ZoomLevel::REALLYBIG => Some(ZoomLevel::BIG),
+            ZoomLevel::BIG => Some(ZoomLevel::NORMAL),
+            ZoomLevel::NORMAL => Some(ZoomLevel::SMALL),
+            ZoomLevel::SMALL => Some(ZoomLevel::REALLYSMALL),
+            ZoomLevel::REALLYSMALL => Some(ZoomLevel::REALLYSMALL),
             _ => None
         }
     }
 
-    pub fn get_from_i32(value: i32) -> Option<ZOOM_LEVEL> {
+    pub fn get_from_i32(value: i32) -> Option<ZoomLevel> {
 
-        const I32_REALLYSMALL: i32 = ZOOM_LEVEL::REALLYSMALL as i32;
-        const I32_SMALL: i32 = ZOOM_LEVEL::SMALL as i32;
-        const I32_NORMAL: i32 = ZOOM_LEVEL::NORMAL as i32;
-        const I32_BIG: i32 = ZOOM_LEVEL::BIG as i32;
-        const I32_REALLYBIG: i32 = ZOOM_LEVEL::REALLYBIG as i32;
+        const I32_REALLYSMALL: i32 = ZoomLevel::REALLYSMALL as i32;
+        const I32_SMALL: i32 = ZoomLevel::SMALL as i32;
+        const I32_NORMAL: i32 = ZoomLevel::NORMAL as i32;
+        const I32_BIG: i32 = ZoomLevel::BIG as i32;
+        const I32_REALLYBIG: i32 = ZoomLevel::REALLYBIG as i32;
 
         match value {
-            I32_REALLYSMALL => Some(ZOOM_LEVEL::REALLYSMALL),
-            I32_SMALL => Some(ZOOM_LEVEL::SMALL),
-            I32_NORMAL=> Some(ZOOM_LEVEL::NORMAL),
-            I32_BIG => Some(ZOOM_LEVEL::BIG),
-            I32_REALLYBIG => Some(ZOOM_LEVEL::REALLYBIG),
+            I32_REALLYSMALL => Some(ZoomLevel::REALLYSMALL),
+            I32_SMALL => Some(ZoomLevel::SMALL),
+            I32_NORMAL=> Some(ZoomLevel::NORMAL),
+            I32_BIG => Some(ZoomLevel::BIG),
+            I32_REALLYBIG => Some(ZoomLevel::REALLYBIG),
             _ => None
             // _ => Some(ZOOM_LEVEL::NORMAL)  // DEFAULTING TO ZERO, FIXME: rather panic?
         }
