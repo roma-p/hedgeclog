@@ -42,11 +42,3 @@ fn init_hedgehog_info(mut r_hedgehog_info: ResMut<ResHedgeHogInfo>) {
         .mul_transform(Transform::from_scale(Vec3{x:1.5, y:1.5, z:1.5}))          // scaling it to fit tiles
         .mul_transform(Transform::from_translation(Vec3{x:-0.4, y:1.5, z:1.3}));  // positionning it on the tiles
 }
-
-// fn spawn_hedgehog(
-//         commands: Commands,
-//         meshes: ResMut<Assets<Mesh>>,
-//         materials: ResMut<Assets<StandardMaterial>>,
-//         r_hedgehog: Res<HedgehogAssets>
-// ) {
-// }

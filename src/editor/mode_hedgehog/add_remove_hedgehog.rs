@@ -16,7 +16,11 @@ use crate::editor::common::{
     StateEditorMode,
     SSetEditor,
 };
-use crate::common::level::{LevelGrid, LEVEL_ORIGIN};
+use crate::common::level::{
+    LevelGrid, LEVEL_ORIGIN,
+    EventHedgehogCreationAsked,
+    EventHedgehogRemovalAsked
+};
 use crate::editor::cursor_to_world::CursorGridPosition;
 
 use crate::common::tiles::{EnumeTileBehaviour, TILE_SIZE};
@@ -34,7 +38,8 @@ pub struct EventHedgehogRemoved;
 
 #[derive(Resource, Debug, Default)]
 struct HedgehogBuilderInfo {
-    pub current_hover_hedgehog: Option<Entity>,
+    pub current_hover_hedgehog: Option<Entity>, // TODO: del this. just the grid position is
+    // enough, entity is store within the rgrid.
     pub current_hover_position: GridPosition
 }
 
@@ -129,6 +134,8 @@ fn user_input(
     }
 } 
 
+// TODO: globlal logic for userinput allowed.
+
 fn update_hedgehog_creator_position(
     r_cursor_grid_position: Res<CursorGridPosition>,
     mut r_hedgehog_builder_info: ResMut<HedgehogBuilderInfo>,
@@ -141,19 +148,20 @@ fn update_hedgehog_creator_position(
     let grid_pos_z = r_cursor_grid_position.grid_pos_z;
 
     // hedgehog can only be created on floors.
-    match r_grid.level_grid[grid_pos_x][grid_pos_z] {
+    match r_grid.level_grid[grid_pos_x][grid_pos_z].tile_behaviour {
         EnumeTileBehaviour::TileBFloor => {},
         _ => return
     }
 
     // hedgehog can only be created if there is no hedgehog on that tile.
-    match r_grid.hedgehog_grid[grid_pos_x][grid_pos_z] {
+    match r_grid.hedgehog_grid[grid_pos_x][grid_pos_z].hedgehog_behaviour {
         EnumHedgehogOnGrid::Empty => {},
         _ => return
     }
 
     let mut entity_new_value: Option<Entity> = None;
 
+    // TODO: del this.
     // finding eventual hover hedgehog.
     for (entity, grid_position) in q_hedgehogs.iter() {
         if grid_pos_x == grid_position.x && grid_pos_z == grid_position.z {
@@ -181,80 +189,36 @@ fn update_hedgehog_creator_position(
 }
 
 fn create_hedgehog(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    r_hedgehog: Res<HedgehogAssets>,
     q_hedgehog_creator: Query<&mut Transform, With <MarkerHedgehogCreator>>,
     r_hedgehog_builder_info: ResMut<HedgehogBuilderInfo>,
-    mut r_grid : ResMut<LevelGrid>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
+    mut e_event_hedgehog_creation_asked: EventWriter<EventHedgehogCreationAsked>,
 ) {
-
-    let grid_pos_x = r_hedgehog_builder_info.current_hover_position.x;
-    let grid_pos_z = r_hedgehog_builder_info.current_hover_position.z;
-    let transform = q_hedgehog_creator.single();
-
-    let hedgehog_material = materials.add(
-        StandardMaterial{
-            base_color_texture: Some(r_hedgehog.sprite_idle.clone()),
-            alpha_mode: AlphaMode::Mask(0.5),
-            ..Default::default()
+    e_event_hedgehog_creation_asked.send(
+        EventHedgehogCreationAsked{
+            hedgehog_transform: q_hedgehog_creator.single().clone(),
+            grid_position: r_hedgehog_builder_info.current_hover_position.clone(),
         }
     );
-    commands.spawn(
-        (
-            BundleHedgehog {
-                model: PbrBundle {
-                    mesh: meshes.add(Mesh::from(Plane3d{normal: Direction3d::Y})),
-                    material: hedgehog_material,
-                    transform: transform.clone(),
-                    ..Default::default()
-                },
-                grid_position: GridPosition {
-                    x : grid_pos_x,
-                    z : grid_pos_z,
-                }
-            }, 
-            MarkerHedgehogOnLevel,
-        )
-    );
-    r_grid.hedgehog_grid[grid_pos_x][grid_pos_z] = EnumHedgehogOnGrid::HedgehogAlive;
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
 
 // When deleting tiles, also delete hedgehog.
 
 fn remove_hedgehog(
-    mut commands: Commands,
     r_cursor_grid_position: Res<CursorGridPosition>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
-    q_hedgehogs: Query<(Entity, &GridPosition), With <MarkerHedgehogOnLevel>>,
-    mut r_grid : ResMut<LevelGrid>,
-    mut e_cursor_grid_position_changed: EventWriter<EventCursorGridPositionChanged>,
+    mut e_event_hedgehog_removal_asked: EventWriter<EventHedgehogRemovalAsked>,
 ) {
-
-    // using the grid pos directly for removing hedgehogs.
-    let grid_pos_x = r_cursor_grid_position.grid_pos_x;
-    let grid_pos_z = r_cursor_grid_position.grid_pos_z;
-
-    match r_grid.hedgehog_grid[grid_pos_x][grid_pos_z] {
-        EnumHedgehogOnGrid::Empty => {
-            s_user_input_allowed.set(StateUserInputAllowed::Allowed);
-            return
-        },
-        _ => {}
-    }
-
-    for (entity, grid_position) in q_hedgehogs.iter() {
-        if grid_pos_x == grid_position.x && grid_pos_z == grid_position.z {
-            commands.entity(entity).despawn_recursive();
-            break;
+    e_event_hedgehog_removal_asked.send(
+        EventHedgehogRemovalAsked{
+            grid_position: GridPosition{
+                x: r_cursor_grid_position.grid_pos_x,
+                z: r_cursor_grid_position.grid_pos_z,
+            }
         }
-    }
-    r_grid.hedgehog_grid[grid_pos_x][grid_pos_z] = EnumHedgehogOnGrid::Empty;
+    );
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
-    e_cursor_grid_position_changed.send(EventCursorGridPositionChanged);
 }
 
 

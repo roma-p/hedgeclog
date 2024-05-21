@@ -12,7 +12,9 @@ use crate::common::tiles::{
     MarkerTileOnLevel, 
     TILE_SIZE
 };
-use crate::common::level::{LEVEL_ORIGIN, LevelGrid};
+use crate::common::level::{
+    EventTileCreationAsked, EventTileRemovalAsked, LevelGrid, LEVEL_ORIGIN
+};
 use crate::editor::common::{
     EventEditorSubSystemSetup,
     EventTileSelectedChanged,
@@ -26,15 +28,17 @@ use crate::editor::cursor_to_world::CursorGridPosition;
 
 // -- COMPONENTS / RESSOURCES STATES -----------------------------------------
 
+// TODO: RENAME THIS. or not save data between editor launch, alwas start with floor by default.
 // stores data between editor launch.
 #[derive(Resource, Debug, Default)]
-pub struct BufferedData {
+struct BufferedData {
     pub selected_idx: usize,
 }
 
 #[derive(Component)]
 pub struct MarkerTileCreator;
 
+// TODO: useless, remove this, just used cursor grid pos from cursor to world.
 #[derive(Resource, Debug, Default)]
 pub struct TileBuilderInfo {
     pub current_hover_tile: Option<Entity>,
@@ -42,10 +46,10 @@ pub struct TileBuilderInfo {
 }
 
 #[derive(Event)]
-pub struct EventTileCreated;
+struct EventEditorTileCreationAsked;
 
 #[derive(Event)]
-pub struct EventTileRemoved;
+struct EventEditorTileRemovalAsked;
 
 // -- PLUGIN -----------------------------------------------------------------
 
@@ -54,8 +58,8 @@ pub struct PluginEditorAddRemoveTile;
 impl Plugin for PluginEditorAddRemoveTile{
     fn build(&self, app: &mut App){
         app
-            .add_event::<EventTileCreated>()
-            .add_event::<EventTileRemoved>()
+            .add_event::<EventEditorTileCreationAsked>()
+            .add_event::<EventEditorTileRemovalAsked>()
             .insert_resource(TileBuilderInfo::default())
             .insert_resource(BufferedData::default())
             .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
@@ -72,9 +76,9 @@ impl Plugin for PluginEditorAddRemoveTile{
                         .run_if(on_event::<EventCursorGridPositionChanged>()
                         .and_then(in_state(StateEditorMode::Tile))),
                     create_tile
-                        .run_if(on_event::<EventTileCreated>()),
+                        .run_if(on_event::<EventEditorTileCreationAsked>()),
                     remove_tile
-                        .run_if(on_event::<EventTileRemoved>()),
+                        .run_if(on_event::<EventEditorTileRemovalAsked>()),
                 )
             );
     }
@@ -132,17 +136,17 @@ fn teardown(
 fn user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut e_tile_created: EventWriter<EventTileCreated>,
-    mut e_tile_removed: EventWriter<EventTileRemoved>,
+    mut e_tile_created: EventWriter<EventEditorTileCreationAsked>,
+    mut e_tile_removed: EventWriter<EventEditorTileRemovalAsked>,
     mut q_tile_creator: Query<&mut Transform, With <MarkerTileCreator>>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
 ) {
     if r_mouse_input.just_pressed(MouseButton::Left) {
         s_user_input_allowed.set(StateUserInputAllowed::NotAllowed);  // -> set to Allowed by add_remove_tile.create_tile
-        e_tile_created.send(EventTileCreated);
+        e_tile_created.send(EventEditorTileCreationAsked);
     } else if r_mouse_input.just_pressed(MouseButton::Right) {
         s_user_input_allowed.set(StateUserInputAllowed::NotAllowed);  // -> set to Allowed by add_remove_tile.remove_tile
-        e_tile_removed.send(EventTileRemoved);
+        e_tile_removed.send(EventEditorTileRemovalAsked);
     } else if r_keyboard_input.just_pressed(KeyCode::KeyR) {
         let mut transform = q_tile_creator.single_mut();
         transform.rotate_local_y(PI/2.0);
@@ -196,7 +200,7 @@ fn update_tile_creator_position(
 
     let grid_pos_x = r_cursor_grid_position.grid_pos_x;
     let grid_pos_z = r_cursor_grid_position.grid_pos_z;
-    let current_tile_behaviour = r_grid.level_grid[grid_pos_x][grid_pos_z];
+    let current_tile_behaviour = r_grid.level_grid[grid_pos_x][grid_pos_z].tile_behaviour;
 
     let shall_make_previous_tile_visible = r_level_builder_info.current_hover_tile.is_some();
 
@@ -208,6 +212,8 @@ fn update_tile_creator_position(
     let mut previous_tile_found = false;
     let mut current_tile_found = false;
 
+    // TODO: rewrite this using the entity reference in the grid level, again, delete
+    // r_level_builder_info.
     for (entity, grid_position, mut visibility) in q_tiles.iter_mut() {
 
         // making previous hover tile visible.
@@ -255,65 +261,33 @@ fn update_tile_creator_position(
 
 
 fn create_tile(
-    mut commands: Commands,
     r_level_builder_info: Res<TileBuilderInfo>,
     r_buffered_data: Res<BufferedData>,
-    r_collection_tile: Res<ResCollectionTile>,
     q_tile_creator: Query<&Transform, With <MarkerTileCreator>>,
-    mut r_grid : ResMut<LevelGrid>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
+    mut e_event_tile_creation_asked: EventWriter<EventTileCreationAsked>,
+    
 ) {
-
-    let current_hover_tile = r_level_builder_info.current_hover_tile;
-    if current_hover_tile.is_some(){
-        // FIXME: crash here: verify that entity still exists...
-        commands.entity(current_hover_tile.unwrap()).despawn();
-    }
-
-    let tile = &r_collection_tile.tiles[r_buffered_data.selected_idx];
-    let transform = q_tile_creator.single();
-
-    let grid_pos_x = r_level_builder_info.current_hover_position.x;
-    let grid_pos_z = r_level_builder_info.current_hover_position.z;
-
-    commands.spawn(
-        (
-            BundleTile{
-                model: SceneBundle {
-                    scene: tile.tile_model.clone(),
-                    transform: transform.clone(),
-                    ..default()
-                }, 
-                tile_id: tile.tile_id.clone(),
-                grid_position: GridPosition {
-                    x : grid_pos_x,
-                    z : grid_pos_z,
-                }
-            },
-            MarkerTileOnLevel,
-        ),
+    e_event_tile_creation_asked.send(
+        EventTileCreationAsked{
+            tile_idx: r_buffered_data.selected_idx,
+            tile_transform: q_tile_creator.single().clone(),
+            grid_position: r_level_builder_info.current_hover_position.clone(),
+        }
     );
-    r_grid.level_grid[grid_pos_x][grid_pos_z] = tile.tile_behaviour;
+    // TODO: centralize this logic to! I don't know how...
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
 
 // TODO:  When deleting tiles, also delete hedgehog.
 
 fn remove_tile(
-    mut commands: Commands,
     r_level_builder_info: Res<TileBuilderInfo>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
-    mut r_grid : ResMut<LevelGrid>,
+    mut e_event_tile_removal_asked: EventWriter<EventTileRemovalAsked>,
 ) {
-
-    let grid_pos_x = r_level_builder_info.current_hover_position.x;
-    let grid_pos_z = r_level_builder_info.current_hover_position.z;
-
-    let current_hover_tile = r_level_builder_info.current_hover_tile;
-    if current_hover_tile.is_some(){
-        // FIXME: crash here: verify that entity still exists...
-        commands.entity(current_hover_tile.unwrap()).despawn();
-    }
-    r_grid.level_grid[grid_pos_x][grid_pos_z] = EnumeTileBehaviour::Empty;
+    e_event_tile_removal_asked.send(EventTileRemovalAsked{
+        grid_position: r_level_builder_info.current_hover_position.clone()
+    });
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }

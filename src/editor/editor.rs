@@ -4,6 +4,7 @@ use crate::config::{StateGlobal, StateUserInputAllowed};
 use crate::editor::common::{
     PluginEditorData,
     StateEditorMode,
+    EventCursorGridPositionChanged,
 };
 use crate::editor::cursor_to_world::PluginCursorToWorld;
 use crate::editor::ui::PluginEditorUI;
@@ -13,6 +14,8 @@ use crate::editor::move_camera::PluginEditorCameraMovement;
 use crate::editor::mode_hedgehog::mode_hedgehog::PluginEditorModeHedgeclog;
 
 use crate::editor::common::SSetEditor;
+
+use crate::common::level::EventLevelEdidted;
 
 
 // -- PLUGIN -----------------------------------------------------------------
@@ -31,7 +34,15 @@ impl Plugin for PluginEditor{
             .add_plugins(PluginLoadSetup)
             .add_plugins(PluginEditorCameraMovement)
             // USER INPUT ----------------------------------------------------
-            .add_systems(Update, user_input_editor_global.in_set(SSetEditor::UserInput))
+            .add_systems(
+                Update,
+                (
+                    user_input_editor_global.in_set(SSetEditor::UserInput),
+                    update_cursor_position_on_level_edited.run_if(
+                        on_event::<EventLevelEdidted>()
+                    )
+                )
+            )
             .configure_sets(Update, SSetEditor::UserInput .run_if(
                 in_state(StateGlobal::EditorRunning).and_then(
                 in_state(StateUserInputAllowed::Allowed)))
@@ -69,3 +80,9 @@ fn user_input_editor_global(
         snext_editor_mode.set(StateEditorMode::Normal); 
     }
 } 
+
+fn update_cursor_position_on_level_edited(
+    mut e_cursor_grid_position_changed: EventWriter<EventCursorGridPositionChanged>,
+){
+    e_cursor_grid_position_changed.send(EventCursorGridPositionChanged);
+}
