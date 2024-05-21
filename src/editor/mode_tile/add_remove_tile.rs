@@ -23,7 +23,7 @@ use crate::editor::common::{
     StateEditorMode
 };
 use crate::editor::cursor_to_world::CursorGridPosition;
-use crate::editor::mode_tile::mode_tile::ModeTileLocalBuffer;
+use crate::editor::mode_tile::common::ModeTileLocalBuffer;
 
 
 // -- COMPONENTS / RESSOURCES STATES -----------------------------------------

@@ -22,20 +22,12 @@ const TILE_SPACING: f32 = 0.5;
 // -- COMPONENTS -------------------------------------------------------------
 
 #[derive(Resource, Debug, Default)]
-pub struct TilesSelectionGrid {
+struct TilesSelectionGrid {
     pub current_idx: usize,
     pub col_number: usize,
     pub row_number: usize,
     pub col_number_on_last_row: usize,
     pub translation_first_tile: Vec3,
-}
-
-// FIXME : ALL OF THIS RESSOURCE USELESS?
-#[derive(Resource, Debug, Default)]
-pub struct LevelBuilderInfo {
-    pub selected_idx: usize,  // USELESS FOR NOW ...
-    pub grid_pos_x: usize,
-    pub grid_pos_z: usize,
 }
 
 #[derive(Component)]
@@ -49,7 +41,6 @@ impl Plugin for PluginEditorSelectTile{
     fn build(&self, app: &mut App){
         app
             .insert_resource(TilesSelectionGrid::default())
-            .insert_resource(LevelBuilderInfo::default())
             .add_systems(OnEnter(StateEditorLoaded::Loading), load)
             .add_systems(
                 Update,
@@ -69,7 +60,7 @@ impl Plugin for PluginEditorSelectTile{
 
 // -- SYSTEM -----------------------------------------------------------------
 
-pub fn load(
+fn load(
     mut commands: Commands,
     mut tiles_selection_grid: ResMut<TilesSelectionGrid>,
     mut cursor_to_plane_coord: ResMut<CursorToGroundCoordonate>,
@@ -164,7 +155,6 @@ pub fn load(
 
 fn user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
-    // r_builder_info: Res<LevelBuilderInfo>,
     r_tile_selection_grid: Res<TilesSelectionGrid>,
     mut e_tile_selected_changed: EventWriter<EventTileSelectedChanged>,
     mut s_next_editor_view: ResMut<NextState<StateEditorView>>,

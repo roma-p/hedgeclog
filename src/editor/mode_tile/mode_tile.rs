@@ -5,7 +5,7 @@ use crate::editor::common::{
     EventCursorGridPositionChanged
 };
 use crate::common::level::LevelGrid;
-use crate::common::common::GridPosition;
+use crate::editor::mode_tile::common::{ModeTileLocalBuffer, PluginEditorModeTileCommon};
 use crate::editor::mode_tile::select_tile::PluginEditorSelectTile;
 use crate::editor::mode_tile::add_remove_tile::{
     PluginEditorAddRemoveTile,
@@ -16,12 +16,6 @@ use crate::editor::common::SSetEditor;
 use crate::common::tiles::MarkerTileOnLevel;
 
 
-//TODO: move this in mode_tile common?
-#[derive(Resource, Debug, Default)]
-pub struct ModeTileLocalBuffer {
-    pub selected_idx: usize,
-    pub hover_tile_grid_position: Option<GridPosition>
-}
 
 // -- PLUGIN -----------------------------------------------------------------
 
@@ -34,6 +28,7 @@ impl Plugin for PluginEditorModeTile{
         app
             .insert_resource(ModeTileLocalBuffer::default())
             .add_plugins(PluginEditorSelectTile)
+            .add_plugins(PluginEditorModeTileCommon)
             .add_plugins(PluginEditorAddRemoveTile)
             .add_systems(OnEnter(StateEditorMode::Tile), enter_mode_tile)
             .add_systems(OnExit(StateEditorMode::Tile), exit_mode_tile)
