@@ -16,6 +16,8 @@ use crate::common::hedgehog::{
 };
 use crate::common::asset_loader::HedgehogAssets;
 
+// CONST / ENUM / EVENT / COMPONENT / RESSOURCE ------------------------------
+ 
 pub const LEVEL_ORIGIN: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
 #[derive(Event)]
@@ -56,6 +58,33 @@ struct EventTileValidationAsked{
     pub grid_position: GridPosition,
     pub validation_payload: TileValidationPayload,
 }
+
+#[derive(Debug, Default, Clone, Copy)]
+pub struct LevelGridTile {
+    pub tile_behaviour: EnumeTileBehaviour,
+    pub tile_entity: Option<Entity>
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+pub struct LevelGridHedgehog {
+    pub hedgehog_behaviour: EnumHedgehogOnGrid,
+    pub hedgehog_entity: Option<Entity>
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct LevelGrid {
+    pub level_grid: [[LevelGridTile; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
+    pub hedgehog_grid: [[LevelGridHedgehog; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
+}
+
+#[derive(Component)]
+struct MarkerEditorGUI;
+
+// marker component
+#[derive(Component)]
+pub struct MarkerTextLoadingLevel;
+
+// ZOOM ----------------------------------------------------------------------
 
 pub enum ZoomLevel {
     REALLYSMALL = 6,
@@ -105,33 +134,6 @@ impl ZoomLevel {
     }
 }
 
-// FIXME: STORE WAY MORE INFO HERE. 
-//
-
-#[derive(Debug, Default, Clone, Copy)]
-pub struct LevelGridTile {
-    pub tile_behaviour: EnumeTileBehaviour,
-    pub tile_entity: Option<Entity>
-}
-
-#[derive(Debug, Default, Clone, Copy)]
-pub struct LevelGridHedgehog {
-    pub hedgehog_behaviour: EnumHedgehogOnGrid,
-    pub hedgehog_entity: Option<Entity>
-}
-
-#[derive(Resource, Debug, Default)]
-pub struct LevelGrid {
-    pub level_grid: [[LevelGridTile; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
-    pub hedgehog_grid: [[LevelGridHedgehog; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
-}
-
-#[derive(Component)]
-struct MarkerEditorGUI;
-
-// marker component
-#[derive(Component)]
-pub struct MarkerTextLoadingLevel;
 
 // -- PLUGIN -----------------------------------------------------------------
 
@@ -166,9 +168,25 @@ impl Plugin for PluginLevel{
     }
 }
 
+// -- FUNCTIONS --------------------------------------------------------------
+
+fn fn_remove_hedgehog(
+    commands: &mut Commands,
+    r_grid: &mut ResMut<LevelGrid>,
+    x: usize, z: usize,
+){
+    if let Some(entity) = r_grid.hedgehog_grid[x][z].hedgehog_entity{
+        commands.entity(entity).despawn();
+        r_grid.hedgehog_grid[x][z] = LevelGridHedgehog{
+            hedgehog_entity: None,
+            hedgehog_behaviour: EnumHedgehogOnGrid::Empty
+        };
+    }
+}
+
 // -- SYSTEM -----------------------------------------------------------------
 
-// -- loading ----------------------------------------------------------------
+// -- loading --
 
 fn level_loading_prepare(
     mut commands: Commands,
@@ -214,6 +232,8 @@ fn level_loading_load(
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
 
+// -- tile --
+
 fn create_tile(
     mut commands: Commands,
     mut r_grid : ResMut<LevelGrid>,
@@ -223,12 +243,11 @@ fn create_tile(
 ){
     for e in e_event_tile_creation_asked.read() {
         let tile = &r_collection_tile.tiles[e.tile_idx];
-        let grid_pos_x = e.grid_position.x;
-        let grid_pos_z = e.grid_position.z;
+        let x = e.grid_position.x;
+        let z = e.grid_position.z;
 
-        let tile_entity = r_grid.level_grid[grid_pos_x][grid_pos_z].tile_entity;
-        if tile_entity.is_some(){
-            commands.entity(tile_entity.unwrap()).despawn();
+        if let Some(tile_entity) = r_grid.level_grid[x][z].tile_entity {
+            commands.entity(tile_entity).despawn();
         }
 
         let entity_commands = commands.spawn(
@@ -240,15 +259,12 @@ fn create_tile(
                         ..default()
                     }, 
                     tile_id: tile.tile_id.clone(),
-                    grid_position: GridPosition {
-                        x : grid_pos_x,
-                        z : grid_pos_z,
-                    }
+                    grid_position: GridPosition{x, z}
                 },
                 MarkerTileOnLevel,
             ),
         );
-        r_grid.level_grid[grid_pos_x][grid_pos_z] = LevelGridTile{
+        r_grid.level_grid[x][z] = LevelGridTile{
             tile_behaviour: tile.tile_behaviour,
             tile_entity: Some(entity_commands.id())
         };
@@ -268,18 +284,18 @@ fn remove_tile(
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ) {
     for e in e_event_tile_removal_asked.read() {
-        let grid_pos_x = e.grid_position.x;
-        let grid_pos_z = e.grid_position.z;
+        let x = e.grid_position.x;
+        let z = e.grid_position.z;
 
-        let tile_entity = r_grid.level_grid[grid_pos_x][grid_pos_z].tile_entity;
-
-        if tile_entity.is_some(){
-            commands.entity(tile_entity.unwrap()).despawn();
+        if let Some(tile_entity) = r_grid.level_grid[x][z].tile_entity{
+            commands.entity(tile_entity).despawn();
         }
-        r_grid.level_grid[grid_pos_x][grid_pos_z] = LevelGridTile{
+
+        r_grid.level_grid[x][z] = LevelGridTile{
             tile_entity: None,
             tile_behaviour: EnumeTileBehaviour::Empty
         };
+
         e_event_tile_validation_asked.send(
             EventTileValidationAsked{
                 grid_position: e.grid_position.clone(),
@@ -288,6 +304,8 @@ fn remove_tile(
         );
     }
 }
+
+// -- hedeghog --
 
 fn create_hedgehog(
     mut commands: Commands,
@@ -299,8 +317,10 @@ fn create_hedgehog(
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ){
     for e in e_event_hedgehog_creation_asked.read() {
-        let grid_pos_x = e.grid_position.x;
-        let grid_pos_z = e.grid_position.z;
+
+        let x = e.grid_position.x;
+        let z = e.grid_position.z;
+
         let hedgehog_material = materials.add(
             StandardMaterial{
                 base_color_texture: Some(r_hedgehog.sprite_idle.clone()),
@@ -309,9 +329,8 @@ fn create_hedgehog(
             }
         );
 
-        let hedgehog_entity = r_grid.hedgehog_grid[grid_pos_x][grid_pos_z].hedgehog_entity;
-        if hedgehog_entity.is_some(){
-            commands.entity(hedgehog_entity.unwrap()).despawn();
+        if let Some(hedgehog_entity) = r_grid.hedgehog_grid[x][z].hedgehog_entity {
+            commands.entity(hedgehog_entity).despawn();
         }
 
         let entity_commands = commands.spawn(
@@ -323,19 +342,17 @@ fn create_hedgehog(
                         transform: e.hedgehog_transform.clone(),
                         ..Default::default()
                     },
-                    grid_position: GridPosition {
-                        x : grid_pos_x,
-                        z : grid_pos_z,
-                    }
+                    grid_position: GridPosition{x, z}
                 }, 
                 MarkerHedgehogOnLevel,
             )
         );
 
-        r_grid.hedgehog_grid[grid_pos_x][grid_pos_z] = LevelGridHedgehog{
+        r_grid.hedgehog_grid[x][z] = LevelGridHedgehog{
             hedgehog_behaviour: EnumHedgehogOnGrid::HedgehogAlive,
             hedgehog_entity: Some(entity_commands.id())
         };
+
         e_event_tile_validation_asked.send(
             EventTileValidationAsked{
                 grid_position: e.grid_position.clone(),
@@ -352,18 +369,11 @@ fn remove_hedgehog(
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ) {
     for e in e_event_hedgehog_removal_asked.read() {
-        let grid_pos_x = e.grid_position.x;
-        let grid_pos_z = e.grid_position.z;
+        let x = e.grid_position.x;
+        let z = e.grid_position.z;
 
-        let hedgehog_entity = r_grid.hedgehog_grid[grid_pos_x][grid_pos_z].hedgehog_entity;
+        fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
 
-        if hedgehog_entity.is_some(){
-            commands.entity(hedgehog_entity.unwrap()).despawn();
-        }
-        r_grid.hedgehog_grid[grid_pos_x][grid_pos_z] = LevelGridHedgehog{
-            hedgehog_entity: None,
-            hedgehog_behaviour: EnumHedgehogOnGrid::Empty
-        };
         e_event_tile_validation_asked.send(
             EventTileValidationAsked{
                 grid_position: e.grid_position.clone(),
@@ -377,30 +387,24 @@ fn validate_level_edition(
     mut commands: Commands,
     mut e_event_tile_validation_asked: EventReader<EventTileValidationAsked>,
     mut e_event_level_edited: EventWriter<EventLevelEdidted>,
-    r_grid : Res<LevelGrid>,
+    mut r_grid : ResMut<LevelGrid>,
 ) {
 
     for e in e_event_tile_validation_asked.read(){
 
-        let grid_pos_x = e.grid_position.x;
-        let grid_pos_z = e.grid_position.z;
-        let hedgehog_entity = r_grid.hedgehog_grid[grid_pos_x][grid_pos_z].hedgehog_entity;
-        let tile_behaviour = r_grid.level_grid[grid_pos_x][grid_pos_z].tile_behaviour;
+        let x = e.grid_position.x;
+        let z = e.grid_position.z;
+        let tile_behaviour = r_grid.level_grid[x][z].tile_behaviour;
 
         match e.validation_payload{
             TileValidationPayload::RemovedTile => {
-                if hedgehog_entity.is_some(){
-                    commands.entity(hedgehog_entity.unwrap()).despawn();
-                }
-
+                fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
             },
             TileValidationPayload::AddedTile => {
                 match tile_behaviour {
                     EnumeTileBehaviour::TileBFloor => {}
                     _ => {
-                        if hedgehog_entity.is_some(){
-                            commands.entity(hedgehog_entity.unwrap()).despawn();
-                        }
+                        fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
                     }
                 }
             }

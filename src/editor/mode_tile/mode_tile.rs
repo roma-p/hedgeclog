@@ -15,8 +15,6 @@ use crate::editor::mode_tile::add_remove_tile::{
 use crate::editor::common::SSetEditor;
 use crate::common::tiles::MarkerTileOnLevel;
 
-
-
 // -- PLUGIN -----------------------------------------------------------------
 
 pub struct PluginEditorModeTile;
@@ -61,15 +59,13 @@ fn exit_mode_tile(
         *visibility = Visibility::Hidden;
     }
 
-    if !r_local_buffer.hover_tile_grid_position.is_some() {
-        return
-    }
-
-    let grid_pos = r_local_buffer.hover_tile_grid_position.unwrap();
-    let hover_entity = r_grid.level_grid[grid_pos.x][grid_pos.z].tile_entity.unwrap();
-    for (entity, mut visibility) in q_tiles.iter_mut() {
-        if entity == hover_entity {
-            *visibility = Visibility::Visible;
+    if let Some(grid_pos) = r_local_buffer.hover_tile_grid_position{
+        if let Some(hover_entity) = r_grid.level_grid[grid_pos.x][grid_pos.z].tile_entity{
+            for (entity, mut visibility) in q_tiles.iter_mut() {
+                if entity == hover_entity {
+                    *visibility = Visibility::Visible;
+                }
+            }
         }
     }
     // TODO force camera view to main view... :

@@ -121,7 +121,6 @@ fn update_cursor_to_world(
     cursor_to_ground_coord.local = local_cursor.xz();
 }
 
-// TODO: rename update_cursor_grid
 fn update_cursor_to_grid_position(
     mut r_cursor_grid_position: ResMut<CursorGridPosition>,
     r_cursor_to_ground_coordonate: Res<CursorToGroundCoordonate>,

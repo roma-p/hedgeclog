@@ -8,8 +8,6 @@ use crate::editor::common::{
     EventCursorGridPositionChanged
 };
 
-
-
 // -- PLUGIN -----------------------------------------------------------------
 
 pub struct PluginEditorModeHedgeclog;
@@ -20,14 +18,14 @@ impl Plugin for PluginEditorModeHedgeclog{
     fn build(&self, app: &mut App){
         app
             .add_plugins(PluginAddRemoveHedgehog)
-            .add_systems(OnEnter(StateEditorMode::Hedgehog), enter_mode_tile)
-            .add_systems(OnExit(StateEditorMode::Hedgehog), exit_mode_tile);
+            .add_systems(OnEnter(StateEditorMode::Hedgehog), enter_mode_hedgehog)
+            .add_systems(OnExit(StateEditorMode::Hedgehog), exit_mode_hedgehog);
     }
 }
 
 // -- SYSTEM -----------------------------------------------------------------
 
-fn enter_mode_tile(
+fn enter_mode_hedgehog(
     mut q_h_creator: Query< &mut Visibility, With <MarkerHedgehogCreator>>,
     mut e_tile_creator_moved: EventWriter<EventCursorGridPositionChanged>,
 ) {
@@ -36,7 +34,7 @@ fn enter_mode_tile(
     e_tile_creator_moved.send(EventCursorGridPositionChanged);
 }
 
-fn exit_mode_tile(
+fn exit_mode_hedgehog(
     mut q_h_creator: Query< &mut Visibility, With <MarkerHedgehogCreator>>
 ) {
 

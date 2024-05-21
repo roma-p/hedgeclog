@@ -5,7 +5,6 @@ use crate::common::common::GridPosition;
 use crate::common::hedgehog::{
     BundleHedgehog,
     ResHedgeHogInfo,
-    MarkerHedgehogOnLevel,
     EnumHedgehogOnGrid
 };
 use crate::common::asset_loader::HedgehogAssets;
@@ -37,10 +36,8 @@ pub struct EventHedgehogCreated;
 pub struct EventHedgehogRemoved;
 
 #[derive(Resource, Debug, Default)]
-struct HedgehogBuilderInfo {
-    pub current_hover_hedgehog: Option<Entity>, // TODO: del this. just the grid position is
-    // enough, entity is store within the rgrid.
-    pub current_hover_position: GridPosition
+struct ModeHedgehogLocalBuffer {
+    pub hover_hedgehog_grid_position: GridPosition
 }
 
 pub struct PluginAddRemoveHedgehog;
@@ -52,7 +49,7 @@ impl Plugin for PluginAddRemoveHedgehog{
         app
             .add_event::<EventHedgehogCreated>()
             .add_event::<EventHedgehogRemoved>()
-            .insert_resource(HedgehogBuilderInfo::default())
+            .insert_resource(ModeHedgehogLocalBuffer::default())
             .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
             .add_systems(OnExit(StateGlobal::EditorRunning), teardown)
             .add_systems(
@@ -138,11 +135,10 @@ fn user_input(
 
 fn update_hedgehog_creator_position(
     r_cursor_grid_position: Res<CursorGridPosition>,
-    mut r_hedgehog_builder_info: ResMut<HedgehogBuilderInfo>,
+    mut r_hedgehog_builder_info: ResMut<ModeHedgehogLocalBuffer>,
     r_hedgehog_info: Res<ResHedgeHogInfo>,
     mut q_hedgehog_creator: Query<&mut Transform, With <MarkerHedgehogCreator>>,
     r_grid : Res<LevelGrid>,
-    q_hedgehogs: Query<(Entity, &GridPosition), With <MarkerHedgehogOnLevel>>,
 ) {
     let grid_pos_x = r_cursor_grid_position.grid_pos_x;
     let grid_pos_z = r_cursor_grid_position.grid_pos_z;
@@ -159,20 +155,8 @@ fn update_hedgehog_creator_position(
         _ => return
     }
 
-    let mut entity_new_value: Option<Entity> = None;
-
-    // TODO: del this.
-    // finding eventual hover hedgehog.
-    for (entity, grid_position) in q_hedgehogs.iter() {
-        if grid_pos_x == grid_position.x && grid_pos_z == grid_position.z {
-            entity_new_value = Some(entity);
-            break;
-        }
-    }
-    r_hedgehog_builder_info.current_hover_hedgehog = entity_new_value;
-
     // registering grid position.
-    r_hedgehog_builder_info.current_hover_position = GridPosition{
+    r_hedgehog_builder_info.hover_hedgehog_grid_position = GridPosition{
         x: grid_pos_x,
         z: grid_pos_z,
     };
@@ -190,14 +174,14 @@ fn update_hedgehog_creator_position(
 
 fn create_hedgehog(
     q_hedgehog_creator: Query<&mut Transform, With <MarkerHedgehogCreator>>,
-    r_hedgehog_builder_info: ResMut<HedgehogBuilderInfo>,
+    r_hedgehog_builder_info: ResMut<ModeHedgehogLocalBuffer>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     mut e_event_hedgehog_creation_asked: EventWriter<EventHedgehogCreationAsked>,
 ) {
     e_event_hedgehog_creation_asked.send(
         EventHedgehogCreationAsked{
             hedgehog_transform: q_hedgehog_creator.single().clone(),
-            grid_position: r_hedgehog_builder_info.current_hover_position.clone(),
+            grid_position: r_hedgehog_builder_info.hover_hedgehog_grid_position.clone(),
         }
     );
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);

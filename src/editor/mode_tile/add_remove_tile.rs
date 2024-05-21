@@ -103,14 +103,10 @@ fn teardown(
     mut q_tiles: Query<(Entity, &mut Visibility), With <MarkerTileOnLevel>>
 ) {
     commands.entity(q_tile_creator.single()).despawn_recursive();
-
-    if r_local_buffer.hover_tile_grid_position.is_some() {
-
-        let grid = r_local_buffer.hover_tile_grid_position.unwrap();
-        let entity = r_grid.level_grid[grid.x][grid.z].tile_entity;
-        if entity.is_some() {
+    if let Some(grid) = r_local_buffer.hover_tile_grid_position{
+        if let Some(entity) = r_grid.level_grid[grid.x][grid.z].tile_entity{
             for (i_entity, mut visibility) in q_tiles.iter_mut() {
-                if i_entity == entity.unwrap() {
+                if i_entity == entity {
                     *visibility = Visibility::Visible;
                 }
             }
@@ -189,12 +185,10 @@ fn update_tile_creator_position(
     let mut previous_tile_entity: Option<Entity> = None;
     let mut shall_make_previous_tile_visible = false;
     
-    if r_local_buffer.hover_tile_grid_position.is_some(){
-        let grid_pos = r_local_buffer.hover_tile_grid_position.unwrap();
-        let opt = r_grid.level_grid[grid_pos.x][grid_pos.z].tile_entity;
-        if opt.is_some() {
+    if let Some(grid) = r_local_buffer.hover_tile_grid_position{
+        if let Some(opt) = r_grid.level_grid[grid.x][grid.z].tile_entity{
             shall_make_previous_tile_visible = true;
-            previous_tile_entity = opt;
+            previous_tile_entity = Some(opt);
         }
     }
 
