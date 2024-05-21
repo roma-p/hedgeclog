@@ -1,5 +1,4 @@
 use std::f32::consts::PI;
-use std::usize;
 
 use bevy::prelude::*;
 
@@ -24,26 +23,12 @@ use crate::editor::common::{
     StateEditorMode
 };
 use crate::editor::cursor_to_world::CursorGridPosition;
+use crate::editor::mode_tile::mode_tile::ModeTileLocalBuffer;
 
 
 // -- COMPONENTS / RESSOURCES STATES -----------------------------------------
-
-// TODO: RENAME THIS. or not save data between editor launch, alwas start with floor by default.
-// stores data between editor launch.
-#[derive(Resource, Debug, Default)]
-struct BufferedData {
-    pub selected_idx: usize,
-}
-
 #[derive(Component)]
 pub struct MarkerTileCreator;
-
-// TODO: useless, remove this, just used cursor grid pos from cursor to world.
-#[derive(Resource, Debug, Default)]
-pub struct TileBuilderInfo {
-    pub current_hover_tile: Option<Entity>,
-    pub current_hover_position: GridPosition
-}
 
 #[derive(Event)]
 struct EventEditorTileCreationAsked;
@@ -60,8 +45,6 @@ impl Plugin for PluginEditorAddRemoveTile{
         app
             .add_event::<EventEditorTileCreationAsked>()
             .add_event::<EventEditorTileRemovalAsked>()
-            .insert_resource(TileBuilderInfo::default())
-            .insert_resource(BufferedData::default())
             .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
             .add_systems(OnExit(StateGlobal::EditorRunning), teardown)
             .add_systems(
@@ -87,11 +70,10 @@ impl Plugin for PluginEditorAddRemoveTile{
 fn setup(
     mut commands: Commands,
     r_collection_tile: Res<ResCollectionTile>,
-    r_buffered_data: Res<BufferedData>,
-    // mut r_level_builder_info: ResMut<TileBuilderInfo>,  // FIXME: to del?
+    r_local_buffer: Res<ModeTileLocalBuffer>,
     mut e_editor_subsystem_setup: EventWriter<EventEditorSubSystemSetup>,
 ) {
-    let tile_data = &r_collection_tile.tiles[r_buffered_data.selected_idx];
+    let tile_data = &r_collection_tile.tiles[r_local_buffer.selected_idx];
     commands.spawn(
         (
             BundleTile{
@@ -116,21 +98,25 @@ fn setup(
 fn teardown(
     mut commands: Commands,
     q_tile_creator: Query<Entity, With <MarkerTileCreator>>,
-    mut r_level_builder_info: ResMut<TileBuilderInfo>,
+    mut r_local_buffer: ResMut<ModeTileLocalBuffer>,
+    r_grid : Res<LevelGrid>,
     mut q_tiles: Query<(Entity, &mut Visibility), With <MarkerTileOnLevel>>
 ) {
     commands.entity(q_tile_creator.single()).despawn_recursive();
-    if !r_level_builder_info.current_hover_tile.is_some() {
-        return
-    }
-    for (entity, mut visibility) in q_tiles.iter_mut() {
-        if entity == r_level_builder_info.current_hover_tile.unwrap() {
-            *visibility = Visibility::Visible;
+
+    if r_local_buffer.hover_tile_grid_position.is_some() {
+
+        let grid = r_local_buffer.hover_tile_grid_position.unwrap();
+        let entity = r_grid.level_grid[grid.x][grid.z].tile_entity;
+        if entity.is_some() {
+            for (i_entity, mut visibility) in q_tiles.iter_mut() {
+                if i_entity == entity.unwrap() {
+                    *visibility = Visibility::Visible;
+                }
+            }
         }
     }
-    r_level_builder_info.current_hover_tile = None;
-    r_level_builder_info.current_hover_position.x = 0;
-    r_level_builder_info.current_hover_position.z = 0;
+    r_local_buffer.hover_tile_grid_position = None;
 }
 
 fn user_input(
@@ -157,18 +143,18 @@ fn update_tile_creator_type(
     mut commands: Commands,
     q_tile_creator: Query<Entity, With <MarkerTileCreator>>,
     r_collection_tile: Res<ResCollectionTile>,
-    mut r_buffered_data: ResMut<BufferedData>,
+    mut r_local_buffer: ResMut<ModeTileLocalBuffer>,
     mut e_tile_selected_changed: EventReader<EventTileSelectedChanged>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
 ){
 
     commands.entity(q_tile_creator.single()).despawn_recursive();
     for ev in e_tile_selected_changed.read() {
-        r_buffered_data.selected_idx = ev.tile_id;
+        r_local_buffer.selected_idx = ev.tile_id;
     }
 
     // Spawning creator tile (used to edit level).
-    let tile_data = &r_collection_tile.tiles[r_buffered_data.selected_idx];
+    let tile_data = &r_collection_tile.tiles[r_local_buffer.selected_idx];
     commands.spawn(
         (
             BundleTile{
@@ -190,19 +176,32 @@ fn update_tile_creator_type(
 }
 
 fn update_tile_creator_position(
-    mut r_level_builder_info: ResMut<TileBuilderInfo>,
     r_cursor_grid_position: Res<CursorGridPosition>,
     r_grid : Res<LevelGrid>,
+    mut r_local_buffer: ResMut<ModeTileLocalBuffer>,
     mut q_tile_creator: Query<&mut Transform, With <MarkerTileCreator>>,
     mut q_tiles: Query<(Entity, &GridPosition, &mut Visibility), With <MarkerTileOnLevel>>,
 ){
-    let mut entity_new_value: Option<Entity> = None;
-
     let grid_pos_x = r_cursor_grid_position.grid_pos_x;
     let grid_pos_z = r_cursor_grid_position.grid_pos_z;
     let current_tile_behaviour = r_grid.level_grid[grid_pos_x][grid_pos_z].tile_behaviour;
 
-    let shall_make_previous_tile_visible = r_level_builder_info.current_hover_tile.is_some();
+    let mut previous_tile_entity: Option<Entity> = None;
+    let mut shall_make_previous_tile_visible = false;
+    
+    if r_local_buffer.hover_tile_grid_position.is_some(){
+        let grid_pos = r_local_buffer.hover_tile_grid_position.unwrap();
+        let opt = r_grid.level_grid[grid_pos.x][grid_pos.z].tile_entity;
+        if opt.is_some() {
+            shall_make_previous_tile_visible = true;
+            previous_tile_entity = opt;
+        }
+    }
+
+    if shall_make_previous_tile_visible {
+        let grid_pos = r_local_buffer.hover_tile_grid_position.unwrap();
+        previous_tile_entity = r_grid.level_grid[grid_pos.x][grid_pos.z].tile_entity;
+    }
 
     let shall_make_current_tile_hidden = match current_tile_behaviour {
         EnumeTileBehaviour::Empty => false,
@@ -212,14 +211,12 @@ fn update_tile_creator_position(
     let mut previous_tile_found = false;
     let mut current_tile_found = false;
 
-    // TODO: rewrite this using the entity reference in the grid level, again, delete
-    // r_level_builder_info.
     for (entity, grid_position, mut visibility) in q_tiles.iter_mut() {
 
         // making previous hover tile visible.
         if 
-                r_level_builder_info.current_hover_tile.is_some() &&
-                entity == r_level_builder_info.current_hover_tile.unwrap()
+                shall_make_previous_tile_visible &&
+                entity == previous_tile_entity.unwrap()
         {
             *visibility = Visibility::Visible;
             previous_tile_found = true;
@@ -230,7 +227,6 @@ fn update_tile_creator_position(
             if shall_make_current_tile_hidden {
                 *visibility = Visibility::Hidden;
                 current_tile_found = true;
-                entity_new_value = Some(entity);
             }
         }
         
@@ -242,11 +238,10 @@ fn update_tile_creator_position(
         }
     }
 
-    r_level_builder_info.current_hover_tile = entity_new_value;
-    r_level_builder_info.current_hover_position = GridPosition{
+    r_local_buffer.hover_tile_grid_position = Some(GridPosition{
            x: grid_pos_x,
            z: grid_pos_z,
-    };
+    });
 
     let mut transform = q_tile_creator.single_mut();
     let current_rotation = transform.rotation; 
@@ -261,33 +256,37 @@ fn update_tile_creator_position(
 
 
 fn create_tile(
-    r_level_builder_info: Res<TileBuilderInfo>,
-    r_buffered_data: Res<BufferedData>,
+    r_local_buffer: Res<ModeTileLocalBuffer>,
     q_tile_creator: Query<&Transform, With <MarkerTileCreator>>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     mut e_event_tile_creation_asked: EventWriter<EventTileCreationAsked>,
+    r_cursor_grid_position: Res<CursorGridPosition>,
     
 ) {
     e_event_tile_creation_asked.send(
         EventTileCreationAsked{
-            tile_idx: r_buffered_data.selected_idx,
+            tile_idx: r_local_buffer.selected_idx,
             tile_transform: q_tile_creator.single().clone(),
-            grid_position: r_level_builder_info.current_hover_position.clone(),
+            grid_position: GridPosition {
+                x: r_cursor_grid_position.grid_pos_x,
+                z: r_cursor_grid_position.grid_pos_z,
+            }
         }
     );
     // TODO: centralize this logic to! I don't know how...
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
 
-// TODO:  When deleting tiles, also delete hedgehog.
-
 fn remove_tile(
-    r_level_builder_info: Res<TileBuilderInfo>,
+    r_cursor_grid_position: Res<CursorGridPosition>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     mut e_event_tile_removal_asked: EventWriter<EventTileRemovalAsked>,
 ) {
     e_event_tile_removal_asked.send(EventTileRemovalAsked{
-        grid_position: r_level_builder_info.current_hover_position.clone()
+        grid_position: GridPosition {
+            x: r_cursor_grid_position.grid_pos_x,
+            z: r_cursor_grid_position.grid_pos_z,
+        }
     });
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }

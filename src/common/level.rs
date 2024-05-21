@@ -30,7 +30,6 @@ pub struct EventTileRemovalAsked{
     pub grid_position: GridPosition,
 }
 
-// TODO: emit this at end of 'validation asked'
 #[derive(Event)]
 pub struct EventLevelEdidted;
 

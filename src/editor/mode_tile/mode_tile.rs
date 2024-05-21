@@ -4,16 +4,24 @@ use crate::editor::common::{
     StateEditorView, 
     EventCursorGridPositionChanged
 };
+use crate::common::level::LevelGrid;
+use crate::common::common::GridPosition;
 use crate::editor::mode_tile::select_tile::PluginEditorSelectTile;
 use crate::editor::mode_tile::add_remove_tile::{
     PluginEditorAddRemoveTile,
-    TileBuilderInfo,
     MarkerTileCreator,
 };
 
 use crate::editor::common::SSetEditor;
 use crate::common::tiles::MarkerTileOnLevel;
 
+
+//TODO: move this in mode_tile common?
+#[derive(Resource, Debug, Default)]
+pub struct ModeTileLocalBuffer {
+    pub selected_idx: usize,
+    pub hover_tile_grid_position: Option<GridPosition>
+}
 
 // -- PLUGIN -----------------------------------------------------------------
 
@@ -24,6 +32,7 @@ pub struct PluginEditorModeTile;
 impl Plugin for PluginEditorModeTile{
     fn build(&self, app: &mut App){
         app
+            .insert_resource(ModeTileLocalBuffer::default())
             .add_plugins(PluginEditorSelectTile)
             .add_plugins(PluginEditorAddRemoveTile)
             .add_systems(OnEnter(StateEditorMode::Tile), enter_mode_tile)
@@ -48,18 +57,23 @@ fn enter_mode_tile(
 
 fn exit_mode_tile(
     mut q_tile_creator: Query< &mut Visibility, (With <MarkerTileCreator>, Without<MarkerTileOnLevel>)>,
-    r_level_builder_info: ResMut<TileBuilderInfo>,
+    r_local_buffer: Res<ModeTileLocalBuffer>,
+    r_grid : Res<LevelGrid>,
     mut q_tiles: Query<(Entity, &mut Visibility), (With <MarkerTileOnLevel>, Without<MarkerTileCreator>)>
 ) {
 
     if let Ok(mut visibility) = q_tile_creator.get_single_mut() {
         *visibility = Visibility::Hidden;
     }
-    if !r_level_builder_info.current_hover_tile.is_some() {
+
+    if !r_local_buffer.hover_tile_grid_position.is_some() {
         return
     }
+
+    let grid_pos = r_local_buffer.hover_tile_grid_position.unwrap();
+    let hover_entity = r_grid.level_grid[grid_pos.x][grid_pos.z].tile_entity.unwrap();
     for (entity, mut visibility) in q_tiles.iter_mut() {
-        if entity == r_level_builder_info.current_hover_tile.unwrap() {
+        if entity == hover_entity {
             *visibility = Visibility::Visible;
         }
     }

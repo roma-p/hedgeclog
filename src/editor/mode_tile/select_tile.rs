@@ -21,8 +21,6 @@ const TILE_SPACING: f32 = 0.5;
 
 // -- COMPONENTS -------------------------------------------------------------
 
-// TODO: split this ressource, no need to query tile_vector every frame!
-// need to split between parts that are modified together...
 #[derive(Resource, Debug, Default)]
 pub struct TilesSelectionGrid {
     pub current_idx: usize,

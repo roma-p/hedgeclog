@@ -87,9 +87,6 @@ fn setup(
     e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
 }
 
-// TODO: do i really need the plane (that can be moved...) 
-// or do i only need the inversed matrix?
-// TODO: rename this as it now have more than one func...
 fn update_cursor_to_world(
     mut cursor_to_ground_coord: ResMut<CursorToGroundCoordonate>,
     q_window: Query<&Window, With<PrimaryWindow>>,

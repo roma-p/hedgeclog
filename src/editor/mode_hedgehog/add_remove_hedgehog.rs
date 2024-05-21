@@ -220,6 +220,3 @@ fn remove_hedgehog(
     );
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
-
-
-// TODO fixme: when excaping tile mode, hover tile not made visible;...
