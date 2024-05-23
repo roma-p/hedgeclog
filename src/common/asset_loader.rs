@@ -32,7 +32,7 @@ impl Plugin for PluginAssetLoader{
     }
 }
 
-pub fn load_hedgehog_assets(
+fn load_hedgehog_assets(
     mut hedgehog_assets: ResMut<HedgehogAssets>,
     asset_server: Res<AssetServer>,
 ) {

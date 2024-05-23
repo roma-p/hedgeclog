@@ -1,4 +1,7 @@
 
+use std::collections::btree_map::Range;
+
+use bevy::math::bool;
 use bevy::prelude::*;
 
 use crate::config::{StateLevelLoaded, LEVEL_DEFAULT_SIZE, StateUserInputAllowed};
@@ -6,6 +9,7 @@ use crate::common::common::GridPosition;
 use crate::common::tiles::{
     BundleTile,
     EnumeTileBehaviour,
+    EnumTilesId,
     ResCollectionTile,
     MarkerTileOnLevel, 
 };
@@ -84,55 +88,19 @@ struct MarkerEditorGUI;
 #[derive(Component)]
 pub struct MarkerTextLoadingLevel;
 
-// ZOOM ----------------------------------------------------------------------
-
-pub enum ZoomLevel {
-    REALLYSMALL = 6,
-    SMALL = 10,
-    NORMAL = 12,
-    BIG = 15,
-    REALLYBIG = 20,
+#[derive(Reflect)]
+pub struct LevelDescriptionTile {
+    tile: Option<EnumTilesId>,
+    hedgehog: bool,  // CHANGE THIS
+    object: bool // LATER.
 }
 
-impl ZoomLevel {
-    pub fn unzoom(&self) -> Option<ZoomLevel> {
-        match self {
-            ZoomLevel::REALLYSMALL => Some(ZoomLevel::SMALL),
-            ZoomLevel::SMALL => Some(ZoomLevel::NORMAL),
-            ZoomLevel::NORMAL => Some(ZoomLevel::BIG),
-            ZoomLevel::BIG => Some(ZoomLevel::REALLYBIG),
-            ZoomLevel::REALLYBIG => Some(ZoomLevel::REALLYBIG),
-        }
-    }
-
-    pub fn zoom(&self) -> Option<ZoomLevel> {
-        match self {
-            ZoomLevel::REALLYBIG => Some(ZoomLevel::BIG),
-            ZoomLevel::BIG => Some(ZoomLevel::NORMAL),
-            ZoomLevel::NORMAL => Some(ZoomLevel::SMALL),
-            ZoomLevel::SMALL => Some(ZoomLevel::REALLYSMALL),
-            ZoomLevel::REALLYSMALL => Some(ZoomLevel::REALLYSMALL),
-        }
-    }
-
-    pub fn get_from_i32(value: i32) -> Option<ZoomLevel> {
-
-        const I32_REALLYSMALL: i32 = ZoomLevel::REALLYSMALL as i32;
-        const I32_SMALL: i32 = ZoomLevel::SMALL as i32;
-        const I32_NORMAL: i32 = ZoomLevel::NORMAL as i32;
-        const I32_BIG: i32 = ZoomLevel::BIG as i32;
-        const I32_REALLYBIG: i32 = ZoomLevel::REALLYBIG as i32;
-
-        match value {
-            I32_REALLYSMALL => Some(ZoomLevel::REALLYSMALL),
-            I32_SMALL => Some(ZoomLevel::SMALL),
-            I32_NORMAL=> Some(ZoomLevel::NORMAL),
-            I32_BIG => Some(ZoomLevel::BIG),
-            I32_REALLYBIG => Some(ZoomLevel::REALLYBIG),
-            _ => None
-        }
-    }
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct LevelDescription {
+    pub level_grid: [[LevelDescriptionTile; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
 }
+
 
 
 // -- PLUGIN -----------------------------------------------------------------
@@ -183,6 +151,71 @@ fn fn_remove_hedgehog(
         };
     }
 }
+
+fn fn_remove_tile(
+    commands: &mut Commands,
+    r_grid: &mut ResMut<LevelGrid>,
+    x: usize, z: usize,
+){
+    if let Some(tile_entity) = r_grid.level_grid[x][z].tile_entity{
+        commands.entity(tile_entity).despawn();
+        r_grid.level_grid[x][z] = LevelGridTile{
+            tile_entity: None,
+            tile_behaviour: EnumeTileBehaviour::Empty
+        };
+    }
+}
+
+// ZOOM --
+
+pub enum ZoomLevel {
+    REALLYSMALL = 6,
+    SMALL = 10,
+    NORMAL = 12,
+    BIG = 15,
+    REALLYBIG = 20,
+}
+
+impl ZoomLevel {
+    pub fn unzoom(&self) -> Option<ZoomLevel> {
+        match self {
+            ZoomLevel::REALLYSMALL => Some(ZoomLevel::SMALL),
+            ZoomLevel::SMALL => Some(ZoomLevel::NORMAL),
+            ZoomLevel::NORMAL => Some(ZoomLevel::BIG),
+            ZoomLevel::BIG => Some(ZoomLevel::REALLYBIG),
+            ZoomLevel::REALLYBIG => Some(ZoomLevel::REALLYBIG),
+        }
+    }
+
+    pub fn zoom(&self) -> Option<ZoomLevel> {
+        match self {
+            ZoomLevel::REALLYBIG => Some(ZoomLevel::BIG),
+            ZoomLevel::BIG => Some(ZoomLevel::NORMAL),
+            ZoomLevel::NORMAL => Some(ZoomLevel::SMALL),
+            ZoomLevel::SMALL => Some(ZoomLevel::REALLYSMALL),
+            ZoomLevel::REALLYSMALL => Some(ZoomLevel::REALLYSMALL),
+        }
+    }
+
+    pub fn get_from_i32(value: i32) -> Option<ZoomLevel> {
+
+        const I32_REALLYSMALL: i32 = ZoomLevel::REALLYSMALL as i32;
+        const I32_SMALL: i32 = ZoomLevel::SMALL as i32;
+        const I32_NORMAL: i32 = ZoomLevel::NORMAL as i32;
+        const I32_BIG: i32 = ZoomLevel::BIG as i32;
+        const I32_REALLYBIG: i32 = ZoomLevel::REALLYBIG as i32;
+
+        match value {
+            I32_REALLYSMALL => Some(ZoomLevel::REALLYSMALL),
+            I32_SMALL => Some(ZoomLevel::SMALL),
+            I32_NORMAL=> Some(ZoomLevel::NORMAL),
+            I32_BIG => Some(ZoomLevel::BIG),
+            I32_REALLYBIG => Some(ZoomLevel::REALLYBIG),
+            _ => None
+        }
+    }
+}
+
 
 // -- SYSTEM -----------------------------------------------------------------
 
@@ -246,9 +279,7 @@ fn create_tile(
         let x = e.grid_position.x;
         let z = e.grid_position.z;
 
-        if let Some(tile_entity) = r_grid.level_grid[x][z].tile_entity {
-            commands.entity(tile_entity).despawn();
-        }
+        fn_remove_tile(&mut commands, &mut r_grid, x, z);
 
         let entity_commands = commands.spawn(
             (
@@ -284,17 +315,11 @@ fn remove_tile(
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ) {
     for e in e_event_tile_removal_asked.read() {
+
         let x = e.grid_position.x;
         let z = e.grid_position.z;
 
-        if let Some(tile_entity) = r_grid.level_grid[x][z].tile_entity{
-            commands.entity(tile_entity).despawn();
-        }
-
-        r_grid.level_grid[x][z] = LevelGridTile{
-            tile_entity: None,
-            tile_behaviour: EnumeTileBehaviour::Empty
-        };
+        fn_remove_tile(&mut commands, &mut r_grid, x, z);
 
         e_event_tile_validation_asked.send(
             EventTileValidationAsked{
@@ -329,9 +354,7 @@ fn create_hedgehog(
             }
         );
 
-        if let Some(hedgehog_entity) = r_grid.hedgehog_grid[x][z].hedgehog_entity {
-            commands.entity(hedgehog_entity).despawn();
-        }
+        fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
 
         let entity_commands = commands.spawn(
             (
@@ -413,3 +436,20 @@ fn validate_level_edition(
     }
     e_event_level_edited.send(EventLevelEdidted);
 }
+
+// -- serialization --
+
+fn generate_level_description(
+    mut commands: Commands,
+    mut r_grid : ResMut<LevelGrid>,
+) {
+    // let mut grid: [[LevelDescriptionTile; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE];
+    // for x in 0..=LEVEL_DEFAULT_SIZE {
+    //     for y in 0..=LEVEL_DEFAULT_SIZE {
+    //         grid[x][y] = LevelDescriptionTile{
+    //             
+    //         }
+    //     }
+    // }
+}
+
