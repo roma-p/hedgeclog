@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::common::common::GridPosition;
+use crate::level::definition::level_definition::GridPosition;
 
 #[derive(Resource, Debug, Default)]
 pub struct ModeTileLocalBuffer {

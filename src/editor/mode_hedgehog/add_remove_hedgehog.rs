@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 
 use crate::config::{StateGlobal, StateUserInputAllowed};
-use crate::common::common::GridPosition;
-use crate::common::hedgehog::{
+use crate::level::definition::level_definition::GridPosition;
+use crate::level::definition::hedgehog::{
     BundleHedgehog,
     ResHedgeHogInfo,
-    EnumHedgehogOnGrid
+    EnumHedgehogOnGrid,
+    HedgehogType,
 };
-use crate::common::asset_loader::HedgehogAssets;
+use crate::asset::asset_loader::HedgehogAssets;
 use crate::editor::common::{
     EventEditorSubSystemSetup,
     StateEditorLoaded,
@@ -15,14 +16,16 @@ use crate::editor::common::{
     StateEditorMode,
     SSetEditor,
 };
-use crate::common::level::{
+use crate::level::definition::level_definition::{
     LevelGrid, LEVEL_ORIGIN,
+};
+use crate::level::actions::edit_level::{
     EventHedgehogCreationAsked,
     EventHedgehogRemovalAsked
 };
 use crate::editor::cursor_to_world::CursorGridPosition;
 
-use crate::common::tiles::{EnumeTileBehaviour, TILE_SIZE};
+use crate::level::definition::tiles::{EnumeTileBehaviour, TILE_SIZE};
 
 // -- COMPONENTS / RESSOURCES STATES -----------------------------------------
 
@@ -101,7 +104,8 @@ fn setup(
                 grid_position: GridPosition {
                     x : 0,
                     z : 0,
-                }
+                },
+                hedgehog_type: HedgehogType::HedegehogeTypeStandard,
             }, 
             MarkerHedgehogCreator,
         )

@@ -1,16 +1,17 @@
 use std::{usize, cmp};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::common::level::LEVEL_ORIGIN;
+use crate::level::definition::level_definition::LEVEL_ORIGIN; 
 use crate::editor::common::{
     EventCursorGridPositionChanged,
     EventEditorSubSystemLoaded,
     EventEditorSubSystemSetup,
     StateEditorLoaded,
 };
-use crate::common::camera::MarkerCamera;
+use crate::level::definition::camera::MarkerCamera;
+use crate::level::definition::tiles::TILE_SIZE;
+
 use crate::config::StateGlobal;
-use crate::common::tiles::TILE_SIZE;
 
 // -- COMPONENT --------------------------------------------------------------
 

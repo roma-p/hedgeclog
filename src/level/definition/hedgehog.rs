@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 use core::f32::consts::PI;
 
-use crate::common::common::GridPosition;
+use crate::level::definition::level_definition::GridPosition;
 
 #[derive(Bundle, Default)]
 pub struct BundleHedgehog{
     pub model: PbrBundle,
     pub grid_position: GridPosition, 
+    pub hedgehog_type: HedgehogType
 }
 
 #[derive(Component, Default, Debug, Clone, Copy)]
@@ -16,6 +17,12 @@ pub enum EnumHedgehogOnGrid {
     HedgehogAlive,
     // HedgehogDeadBurnt,
     // HedgehogDeadTooClose,
+}
+
+#[derive(Component, Reflect, Default, Debug, Clone, Copy)]
+pub enum HedgehogType {
+    #[default]
+    HedegehogeTypeStandard,
 }
 
 #[derive(Component)]

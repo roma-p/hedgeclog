@@ -1,19 +1,25 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
-use crate::config::TRANSLATION_DEFAULT_CAMERA_SHIFT;
-use crate::common::camera::{
+
+use crate::level::definition::level_definition::TRANSLATION_DEFAULT_CAMERA_SHIFT;
+
+use crate::level::definition::camera::{
     MarkerCamera,
     BundleCameraInfo,
     translate_camera,
-    zoom_camera, ZoomCameraMode, 
+    zoom_camera,
+    ZoomCameraMode, 
     EventCameraSnap,
     camera_snap_position_default
 };
+
 use crate::editor::common::{
     EventEditorSubSystemLoaded, StateEditorLoaded,
     TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN, StateEditorView
 };
+
 use crate::config::StateGlobal;
-use crate::common::tiles::TILE_SIZE;
+
+use crate::level::definition::tiles::TILE_SIZE;
 
 #[derive(Component)]
 pub struct MarkerCameraInfoEditorTileSelectorView;

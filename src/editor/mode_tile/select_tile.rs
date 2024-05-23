@@ -3,8 +3,8 @@ use std::{usize, cmp};
 
 use bevy::prelude::*;
 use crate::config::{StateGlobal, StateUserInputAllowed};
-use  crate::common::common::GridPosition;
-use crate::common::tiles::{ResCollectionTile, BundleTile, TILE_SIZE};
+use  crate::level::definition::level_definition::GridPosition;
+use crate::level::definition::tiles::{ResCollectionTile, BundleTile, TILE_SIZE};
 use crate::editor::common::{
     EventEditorSubSystemLoaded,
     EventTileSelectedChanged,

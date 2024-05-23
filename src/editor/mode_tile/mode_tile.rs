@@ -4,7 +4,7 @@ use crate::editor::common::{
     StateEditorView, 
     EventCursorGridPositionChanged
 };
-use crate::common::level::LevelGrid;
+use crate::level::definition::level_definition::LevelGrid;
 use crate::editor::mode_tile::common::{ModeTileLocalBuffer, PluginEditorModeTileCommon};
 use crate::editor::mode_tile::select_tile::PluginEditorSelectTile;
 use crate::editor::mode_tile::add_remove_tile::{
@@ -13,7 +13,7 @@ use crate::editor::mode_tile::add_remove_tile::{
 };
 
 use crate::editor::common::SSetEditor;
-use crate::common::tiles::MarkerTileOnLevel;
+use crate::level::definition::tiles::MarkerTileOnLevel;
 
 // -- PLUGIN -----------------------------------------------------------------
 

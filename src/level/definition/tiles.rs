@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use  crate::common::common::GridPosition;
-use crate::common::asset_loader::{SceneAssets, load_scene_assets};
+use  crate::level::definition::level_definition::GridPosition;
+use crate::asset::asset_loader::{SceneAssets, load_scene_assets};
 
 pub const TILE_SIZE: f32 = 2.0;
 pub const TILE_WIDTH: f32 = 0.3;

@@ -1,12 +1,15 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
-use crate::config::{
-    StateGlobal,
-    StateLevelLoaded,
+use crate::level::definition::level_definition::{
     TRANSLATION_LEVEL_ORIGIN,
     TRANSLATION_DEFAULT_CAMERA_SHIFT
 };
 
-use crate::common::level::ZoomLevel;
+use crate::config::{
+    StateGlobal,
+    StateLevelLoaded,
+};
+
+use crate::level::definition::zoom_level::ZoomLevel;
 
 use crate::editor::common::StateEditorMode;
 

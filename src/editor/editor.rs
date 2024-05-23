@@ -15,7 +15,7 @@ use crate::editor::mode_hedgehog::mode_hedgehog::PluginEditorModeHedgeclog;
 
 use crate::editor::common::SSetEditor;
 
-use crate::common::level::EventLevelEdidted;
+use crate::level::actions::edit_level::EventLevelEdidted;
 
 
 // -- PLUGIN -----------------------------------------------------------------

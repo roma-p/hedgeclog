@@ -3,17 +3,18 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 
 use crate::config::{StateGlobal, StateUserInputAllowed};
-use crate::common::common::GridPosition;
-use crate::common::tiles::{
+use crate::level::definition::level_definition::GridPosition;
+use crate::level::definition::tiles::{
     BundleTile,
     EnumeTileBehaviour,
     ResCollectionTile,
     MarkerTileOnLevel, 
     TILE_SIZE
 };
-use crate::common::level::{
-    EventTileCreationAsked, EventTileRemovalAsked, LevelGrid, LEVEL_ORIGIN
+use crate::level::actions::edit_level::{
+    EventTileCreationAsked, EventTileRemovalAsked
 };
+use crate::level::definition::level_definition::{LEVEL_ORIGIN, LevelGrid};
 use crate::editor::common::{
     EventEditorSubSystemSetup,
     EventTileSelectedChanged,

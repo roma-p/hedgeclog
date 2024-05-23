@@ -1,18 +1,15 @@
 mod config;
-mod common;
 mod editor;
 mod game;
+mod level;
+mod asset;
 
 use bevy::prelude::*;
-
 use config::PluginConfig;
-
-use common::hedgehog::PluginHedghog;
-use common::level::PluginLevel;
-use common::camera::PluginCamera;
 use game::debug::PluginDebug;
-use common::asset_loader::PluginAssetLoader;
-use common::tiles::PluginTiles;
+
+use crate::asset::asset_loader::PluginAssetLoader;
+use crate::level::level::PluginLevel;
 
 use game::game::PluginGame;
 use editor::editor::PluginEditor;
@@ -28,13 +25,12 @@ fn main() {
         })
         // Custom plugins.
         .add_plugins(PluginConfig)
+
         .add_plugins(PluginAssetLoader)
-        .add_plugins(PluginHedghog)
+
         .add_plugins(PluginLevel)
-        .add_plugins(PluginCamera)
         .add_plugins(PluginEditor)
         .add_plugins(PluginGame)
         .add_plugins(PluginDebug)
-        .add_plugins(PluginTiles)
         .run();
 }
