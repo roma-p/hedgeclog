@@ -6,9 +6,11 @@ use crate::level::definition::tiles::*;
 use crate::level::definition::hedgehog::*;
 use crate::level::definition::camera::*;
 use crate::level::definition::level_definition::*;
-use crate::level::actions::edit_level::*;
-
 use crate::level::definition::level_definition::{LevelGrid, LevelGridTile};
+
+use crate::level::actions::edit_level::*;
+use crate::level::actions::serialize::*;
+
 
 // CONST / ENUM / EVENT / COMPONENT / RESSOURCE ------------------------------
  
@@ -32,6 +34,7 @@ impl Plugin for PluginLevel{
             .add_plugins(PluginTiles)
             .add_plugins(PluginLevelDefinition)
             .add_plugins(PluginEditLevel)
+            .add_plugins(PluginSerialize)
 
             .insert_resource(LevelGrid::default())
             .add_systems(

@@ -54,7 +54,13 @@ pub struct PluginLevelDefinition;
 impl Plugin for PluginLevelDefinition{
     fn build(&self, app: &mut App){
         app
-            .insert_resource(LevelGrid::default());
+            .insert_resource(LevelGrid::default())
+            .register_type::<LevelDescription>()
+            .register_type::<LevelDescriptionTile>()
+            .register_type::<EnumTilesId>()
+            .register_type::<HedgehogType>();
+
+
     }
 }
 
