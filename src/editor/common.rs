@@ -2,9 +2,7 @@ use std::usize;
 
 use bevy::prelude::*;
 
-pub const TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN: Vec3 = Vec3::new(
-    1000.0, 0.0, 1000.0
-);
+pub const TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN: Vec3 = Vec3::new(1000.0, 0.0, 1000.0);
 
 #[derive(States, Default, Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum StateEditorLoaded {
@@ -56,8 +54,8 @@ pub struct EventEditorSubSystemSetup;
 pub struct EventCursorGridPositionChanged;
 
 #[derive(Event, Debug)]
-pub struct EventTileSelectedChanged{
-    pub tile_id: usize
+pub struct EventTileSelectedChanged {
+    pub tile_id: usize,
 }
 
 #[derive(Component)]
@@ -65,8 +63,8 @@ pub struct MarkerEditorGUI;
 
 pub struct PluginEditorData;
 
-impl Plugin for PluginEditorData{
-    fn build(&self, app: &mut App){
+impl Plugin for PluginEditorData {
+    fn build(&self, app: &mut App) {
         app
             // INIT DATA -----------------------------------------------------
             .init_state::<StateEditorLoaded>()
