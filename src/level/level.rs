@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::utils::Uuid;
 
 use crate::config::*;
 use crate::level::definition::camera::*;
@@ -11,9 +12,6 @@ use crate::level::actions::edit_level::*;
 use crate::level::actions::serialize::*;
 
 // CONST / ENUM / EVENT / COMPONENT / RESSOURCE ------------------------------
-
-#[derive(Component)]
-struct MarkerEditorGUI;
 
 // marker component
 #[derive(Component)]
@@ -41,6 +39,7 @@ impl Plugin for PluginLevel {
             .add_plugins(PluginEditLevel)
             .add_plugins(PluginSerialize)
             .insert_resource(LevelGrid::default())
+            // TODO: tmp...
             .add_systems(
                 PostStartup,
                 level_loading_prepare.run_if(in_state(StateLevelLoaded::NotLoaded)),
@@ -82,6 +81,7 @@ fn level_loading_load(
     mut commands: Commands,
     mut s_level_loaded: ResMut<NextState<StateLevelLoaded>>,
     mut r_level_grid: ResMut<LevelGrid>,
+    mut r_current_level: ResMut<ResCurrentLevel>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     entity: Query<Entity, With<MarkerTextLoadingLevel>>,
 ) {
@@ -96,4 +96,5 @@ fn level_loading_load(
     commands.entity(entity.single()).despawn();
     s_level_loaded.set(StateLevelLoaded::Loaded);
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
+    r_current_level.episode_uid = Some(Uuid::new_v4());
 }

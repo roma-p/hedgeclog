@@ -37,7 +37,8 @@ pub struct ResHedgeHogInfo {
 
 impl Plugin for PluginHedghog {
     fn build(&self, app: &mut App) {
-        app.init_resource::<ResHedgeHogInfo>()
+        app
+            .init_resource::<ResHedgeHogInfo>()
             .add_systems(Startup, init_hedgehog_info);
     }
 }

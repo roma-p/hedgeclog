@@ -1,5 +1,13 @@
 use bevy::prelude::*;
-use crate::level::definition::level_definition::{GridPosition, LevelGrid, LevelGridHedgehog, LevelGridTile};
+
+use crate::level::definition::level_definition::{
+    GridPosition,
+    LevelGrid,
+    LevelGridHedgehog,
+    LevelGridTile,
+    ResCurrentLevel,
+    LevelUid
+};
 use crate::level::definition::hedgehog::{
     EnumHedgehogOnGrid,
     BundleHedgehog,
@@ -118,6 +126,7 @@ fn create_tile(
     mut commands: Commands,
     mut r_grid : ResMut<LevelGrid>,
     r_collection_tile: Res<ResCollectionTile>,
+    r_current_level: Res<ResCurrentLevel>,
     mut e_event_tile_creation_asked: EventReader<EventTileCreationAsked>,
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ){
@@ -140,13 +149,17 @@ fn create_tile(
                     grid_position: GridPosition{x, z}
                 },
                 MarkerTileOnLevel,
+                LevelUid{uid: r_current_level.episode_uid},
             ),
         );
+        let entity = entity_commands.id();
+
         r_grid.level_grid[x][z] = LevelGridTile{
             tile_id: Some(tile.tile_id),
             tile_behaviour: tile.tile_behaviour,
-            tile_entity: Some(entity_commands.id())
+            tile_entity: Some(entity)
         };
+
         e_event_tile_validation_asked.send(
             EventTileValidationAsked{
                 grid_position: e.grid_position.clone(),
@@ -186,6 +199,7 @@ fn create_hedgehog(
     mut materials: ResMut<Assets<StandardMaterial>>,
     r_hedgehog: Res<HedgehogAssets>,
     mut r_grid : ResMut<LevelGrid>,
+    r_current_level: Res<ResCurrentLevel>,
     mut e_event_hedgehog_creation_asked: EventReader<EventHedgehogCreationAsked>,
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ){
@@ -217,12 +231,15 @@ fn create_hedgehog(
                     hedgehog_type: HedgehogType::HedegehogeTypeStandard,
                 }, 
                 MarkerHedgehogOnLevel,
+                LevelUid{uid: r_current_level.episode_uid},
             )
         );
 
+        let entity = entity_commands.id();
+
         r_grid.hedgehog_grid[x][z] = LevelGridHedgehog{
             hedgehog_behaviour: EnumHedgehogOnGrid::HedgehogAlive,
-            hedgehog_entity: Some(entity_commands.id()),
+            hedgehog_entity: Some(entity),
             hedgehog_tile: Some(HedgehogType::HedegehogeTypeStandard),
         };
 

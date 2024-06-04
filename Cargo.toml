@@ -19,8 +19,15 @@ opt-level = 1
 opt-level = 3
 
 # [[bin]]
-# name = "level_editor"
-# path = "src/level_editor.rs"
+# name = "empty"
+# path = "launch_empty.rs"
 
-# cargo run --bin level_edi
+# [[bin]]
+# name = "editor"
+# path = "src/launch_editor.rs"
+#
+# [[bin]]
+# name = "testbed"
+# path = "src/launch_tesbed.rs"
 
+# cargo run --bin empty

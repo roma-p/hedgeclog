@@ -1,5 +1,9 @@
 use crate::level::definition::level_definition::{
-    LevelDescription, LevelDescriptionTile, LevelGrid, LEVEL_DEFAULT_SIZE,
+    LevelDescription,
+    LevelDescriptionTile,
+    LevelGrid,
+    LEVEL_DEFAULT_SIZE,
+    ResCurrentLevel,
 };
 use bevy::{prelude::*, tasks::IoTaskPool};
 use std::{fs::File, io::Write};
@@ -29,10 +33,12 @@ fn register_type_registry(world: &mut World) {
     type_register.type_register = res;
 }
 
+
 fn save_to_file_level_desc(
     r_type_register: Res<RessourceTypeRegister>,
     r_grid: Res<LevelGrid>,
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
+    r_level_uid: Res<ResCurrentLevel>
 ) {
     if !r_keyboard_input.just_pressed(KeyCode::KeyX) {
         return;
@@ -55,7 +61,10 @@ fn save_to_file_level_desc(
     let mut scene_world = World::new();
     let type_registry = r_type_register.type_register.clone();
     scene_world.insert_resource(type_registry);
-    scene_world.spawn(LevelDescription { level_grid: grid });
+    scene_world.spawn(LevelDescription {
+        level_grid: grid,
+        uuid: r_level_uid.episode_uid.expect("prout")
+    });
     let scene = DynamicScene::from_world(&scene_world);
 
     // Scenes can be serialized like this:
@@ -71,8 +80,3 @@ fn save_to_file_level_desc(
         })
         .detach();
 }
-
-fn load_from_file_level_desc(mut commands: Commands, asset_server: Res<AssetServer>) {}
-
-// TODO: bon, tout revoir en utilisant des Dynamic (ou non) Scene.
-// Mais utiliser des scènes...
