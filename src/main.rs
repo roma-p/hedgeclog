@@ -3,6 +3,7 @@ mod editor;
 mod game;
 mod level;
 mod asset;
+pub mod episode;
 
 use bevy::prelude::*;
 use config::PluginConfig;
