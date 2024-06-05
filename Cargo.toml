@@ -18,16 +18,6 @@ opt-level = 1
 [profiler.dev.package."*"]
 opt-level = 3
 
-# [[bin]]
-# name = "empty"
-# path = "launch_empty.rs"
-
-# [[bin]]
-# name = "editor"
-# path = "src/launch_editor.rs"
-#
-# [[bin]]
-# name = "testbed"
-# path = "src/launch_tesbed.rs"
+[lib]
 
 # cargo run --bin empty
