@@ -49,9 +49,11 @@ impl Plugin for PluginEpsiode {
     }
 }
 
+// -- SYSTEM -----------------------------------------------------------------
+
 fn create_new_episode(
     mut commands: Commands,
-    mut r_current_epuisode: ResMut<RessourceCurrentEpisode>,
+    mut r_current_episode: ResMut<RessourceCurrentEpisode>,
 ) {
 
     let uid = Uuid::new_v4();
@@ -73,8 +75,44 @@ fn create_new_episode(
         )
     );
 
-    *r_current_epuisode = RessourceCurrentEpisode{
+    *r_current_episode = RessourceCurrentEpisode{
         episode_entity: Some(entity_command.id()),
         episode_uid: Some(uid)
     };
 }
+
+// -- FUNCS ------------------------------------------------------------------
+
+fn fn_create_new_episode(
+    commands: &mut Commands,
+    r_current_episode: &mut ResMut<RessourceCurrentEpisode>,
+    episode_name: &str, 
+    episode_filename: &str,
+    // TODO: parents episode position??
+) {
+
+    let uid = Uuid::new_v4();
+
+    let episode_grid = [
+        [None; EPISODE_DEFAULT_HORIZONTAL_SIZE];
+        EPISODE_DEFAULT_VERTICAL_SIZE
+    ];
+
+    let entity_command = commands.spawn(
+        (
+            EpisodeInfo{
+                level_name: episode_name.to_string(),
+                level_path: "assets/level_desc/truc.ron".to_string()
+
+            },
+            EpisodeUID{ uid: Uuid::new_v4() },
+            EpisodeGrid{ episode_grid }
+        )
+    );
+
+    **r_current_episode = RessourceCurrentEpisode{
+        episode_entity: Some(entity_command.id()),
+        episode_uid: Some(uid)
+    };
+}
+
