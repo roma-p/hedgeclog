@@ -8,7 +8,7 @@ impl Plugin for PluginGame{
         app.add_systems(
             Update, 
             (
-                user_input_game_global
+                s_user_input_game_global
                     .run_if(in_state(StateGlobal::Game)
                     .and_then(in_state(StateUserInputAllowed::Allowed))),
             )
@@ -17,7 +17,7 @@ impl Plugin for PluginGame{
 }
 
 
-fn user_input_game_global(
+fn s_user_input_game_global(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut state_global: ResMut<NextState<StateGlobal>>,
 

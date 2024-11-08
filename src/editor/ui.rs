@@ -17,15 +17,15 @@ impl Plugin for PluginEditorUI{
     fn build(&self, app: &mut App){
         app
             .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
-            .add_systems(OnExit(StateGlobal::EditorRunning), teardown)
-            .add_systems(OnEnter(StateGlobal::EditorRunning), text_by_mode_normal)  // FIXME: hack! shall be removed.
+            .add_systems(OnExit(StateGlobal::EditorRunning), s_teardown)
+            .add_systems(OnEnter(StateGlobal::EditorRunning), s_text_by_mode_normal)  // FIXME: hack! shall be removed.
             .add_systems(
                 OnEnter(StateEditorMode::Normal),
-                text_by_mode_normal.run_if(in_state(StateGlobal::EditorRunning))
+                s_text_by_mode_normal.run_if(in_state(StateGlobal::EditorRunning))
             )
             .add_systems(
                 OnEnter(StateEditorMode::Tile),
-                text_by_mode_tile.run_if(in_state(StateGlobal::EditorRunning))
+                s_text_by_mode_tile.run_if(in_state(StateGlobal::EditorRunning))
             );
 
     }
@@ -93,7 +93,7 @@ fn setup(
     e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
 }
 
-fn teardown(
+fn s_teardown(
     mut commands: Commands,
     q_text_loading_editor: Query<Entity, With <MarkerEditorGUI>>,
 ) {
@@ -101,7 +101,7 @@ fn teardown(
 }
 
 
-fn text_by_mode_normal(
+fn s_text_by_mode_normal(
     mut q_editor_text: Query<&mut Text, With <MarkerEditorGUI>>,
     s_editor_mode: Res<State<StateEditorMode>>,
 ) {
@@ -114,7 +114,7 @@ fn text_by_mode_normal(
     text.push_str(TEXT_MODE_NORMAL);
 }
 
-fn text_by_mode_tile(
+fn s_text_by_mode_tile(
     mut q_editor_text: Query<&mut Text, With <MarkerEditorGUI>>,
     s_editor_mode: Res<State<StateEditorMode>>,
 ) {

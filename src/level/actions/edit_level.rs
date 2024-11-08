@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::level::definition::level_definition::{
     GridPosition,
-    LevelGrid,
+    ResCurrentLevelGrid,
     LevelGridHedgehog,
     LevelGridTile,
     ResCurrentLevel,
@@ -76,11 +76,11 @@ impl Plugin for PluginEditLevel{
             .add_systems(
                 Update,
                 (
-                    create_tile.run_if(on_event::<EventTileCreationAsked>()),
-                    remove_tile.run_if(on_event::<EventTileRemovalAsked>()),
-                    create_hedgehog.run_if(on_event::<EventHedgehogCreationAsked>()),
-                    remove_hedgehog.run_if(on_event::<EventHedgehogRemovalAsked>()),
-                    validate_level_edition.run_if(on_event::<EventTileValidationAsked>())
+                    s_create_tile.run_if(on_event::<EventTileCreationAsked>()),
+                    s_remove_tile.run_if(on_event::<EventTileRemovalAsked>()),
+                    s_create_hedgehog.run_if(on_event::<EventHedgehogCreationAsked>()),
+                    s_remove_hedgehog.run_if(on_event::<EventHedgehogRemovalAsked>()),
+                    s_validate_level_edition.run_if(on_event::<EventTileValidationAsked>())
                 )
             );
     }
@@ -88,9 +88,9 @@ impl Plugin for PluginEditLevel{
 
 // -- FUNCTIONS --------------------------------------------------------------
 
-fn fn_remove_hedgehog(
+fn remove_hedgehog(
     commands: &mut Commands,
-    r_grid: &mut ResMut<LevelGrid>,
+    r_grid: &mut ResMut<ResCurrentLevelGrid>,
     x: usize, z: usize,
 ){
     if let Some(entity) = r_grid.hedgehog_grid[x][z].hedgehog_entity{
@@ -103,9 +103,9 @@ fn fn_remove_hedgehog(
     }
 }
 
-fn fn_remove_tile(
+fn remove_tile(
     commands: &mut Commands,
-    r_grid: &mut ResMut<LevelGrid>,
+    r_grid: &mut ResMut<ResCurrentLevelGrid>,
     x: usize, z: usize,
 ){
     if let Some(tile_entity) = r_grid.level_grid[x][z].tile_entity{
@@ -122,9 +122,9 @@ fn fn_remove_tile(
 
 // -- tile --
 
-fn create_tile(
+fn s_create_tile(
     mut commands: Commands,
-    mut r_grid : ResMut<LevelGrid>,
+    mut r_grid : ResMut<ResCurrentLevelGrid>,
     r_collection_tile: Res<ResCollectionTile>,
     r_current_level: Res<ResCurrentLevel>,
     mut e_event_tile_creation_asked: EventReader<EventTileCreationAsked>,
@@ -135,7 +135,7 @@ fn create_tile(
         let x = e.grid_position.x;
         let z = e.grid_position.z;
 
-        fn_remove_tile(&mut commands, &mut r_grid, x, z);
+        remove_tile(&mut commands, &mut r_grid, x, z);
 
         let entity_commands = commands.spawn(
             (
@@ -149,7 +149,7 @@ fn create_tile(
                     grid_position: GridPosition{x, z}
                 },
                 MarkerTileOnLevel,
-                LevelUid{uid: r_current_level.episode_uid},
+                LevelUid{uid: r_current_level.level_uid},
             ),
         );
         let entity = entity_commands.id();
@@ -169,9 +169,9 @@ fn create_tile(
     }
 }
 
-fn remove_tile(
+fn s_remove_tile(
     mut commands: Commands,
-    mut r_grid : ResMut<LevelGrid>,
+    mut r_grid : ResMut<ResCurrentLevelGrid>,
     mut e_event_tile_removal_asked: EventReader<EventTileRemovalAsked>,
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ) {
@@ -180,7 +180,7 @@ fn remove_tile(
         let x = e.grid_position.x;
         let z = e.grid_position.z;
 
-        fn_remove_tile(&mut commands, &mut r_grid, x, z);
+        remove_tile(&mut commands, &mut r_grid, x, z);
 
         e_event_tile_validation_asked.send(
             EventTileValidationAsked{
@@ -193,12 +193,12 @@ fn remove_tile(
 
 // -- hedeghog --
 
-fn create_hedgehog(
+fn s_create_hedgehog(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     r_hedgehog: Res<HedgehogAssets>,
-    mut r_grid : ResMut<LevelGrid>,
+    mut r_grid : ResMut<ResCurrentLevelGrid>,
     r_current_level: Res<ResCurrentLevel>,
     mut e_event_hedgehog_creation_asked: EventReader<EventHedgehogCreationAsked>,
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
@@ -216,7 +216,7 @@ fn create_hedgehog(
             }
         );
 
-        fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
+        remove_hedgehog(&mut commands, &mut r_grid, x, z);
 
         let entity_commands = commands.spawn(
             (
@@ -231,7 +231,7 @@ fn create_hedgehog(
                     hedgehog_type: HedgehogType::HedegehogeTypeStandard,
                 }, 
                 MarkerHedgehogOnLevel,
-                LevelUid{uid: r_current_level.episode_uid},
+                LevelUid{uid: r_current_level.level_uid},
             )
         );
 
@@ -252,9 +252,9 @@ fn create_hedgehog(
     }
 }
 
-fn remove_hedgehog(
+fn s_remove_hedgehog(
     mut commands: Commands,
-    mut r_grid : ResMut<LevelGrid>,
+    mut r_grid : ResMut<ResCurrentLevelGrid>,
     mut e_event_hedgehog_removal_asked: EventReader<EventHedgehogRemovalAsked>,
     mut e_event_tile_validation_asked: EventWriter<EventTileValidationAsked>,
 ) {
@@ -262,7 +262,7 @@ fn remove_hedgehog(
         let x = e.grid_position.x;
         let z = e.grid_position.z;
 
-        fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
+        remove_hedgehog(&mut commands, &mut r_grid, x, z);
 
         e_event_tile_validation_asked.send(
             EventTileValidationAsked{
@@ -273,13 +273,12 @@ fn remove_hedgehog(
     }
 }
 
-fn validate_level_edition(
+fn s_validate_level_edition(
     mut commands: Commands,
     mut e_event_tile_validation_asked: EventReader<EventTileValidationAsked>,
     mut e_event_level_edited: EventWriter<EventLevelEdidted>,
-    mut r_grid : ResMut<LevelGrid>,
+    mut r_grid : ResMut<ResCurrentLevelGrid>,
 ) {
-
     for e in e_event_tile_validation_asked.read(){
 
         let x = e.grid_position.x;
@@ -288,13 +287,13 @@ fn validate_level_edition(
 
         match e.validation_payload{
             TileValidationPayload::RemovedTile => {
-                fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
+                remove_hedgehog(&mut commands, &mut r_grid, x, z);
             },
             TileValidationPayload::AddedTile => {
                 match tile_behaviour {
                     EnumeTileBehaviour::TileBFloor => {}
                     _ => {
-                        fn_remove_hedgehog(&mut commands, &mut r_grid, x, z);
+                        remove_hedgehog(&mut commands, &mut r_grid, x, z);
                     }
                 }
             }

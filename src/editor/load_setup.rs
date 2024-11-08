@@ -42,29 +42,29 @@ impl Plugin for PluginLoadSetup {
             // LOADING / DISPOSE ---------------------------------------------
             .add_systems(
                 Update,
-                load_prepare.run_if(
+                s_load_prepare.run_if(
                     in_state(StateGlobal::EditorRequested)
                         .and_then(in_state(StateEditorLoaded::NotLoaded)),
                 ),
             )
             .add_systems(
                 Update,
-                load_do.run_if(on_event::<EventEditorSubSystemLoaded>()),
+                s_load_do.run_if(on_event::<EventEditorSubSystemLoaded>()),
             )
             // SETUP / TEARDOWN ----------------------------------------------
             .add_systems(
                 OnEnter(StateGlobal::EditorRequested),
-                setup_prepare.run_if(in_state(StateEditorLoaded::LoadedNotSetup)),
+                s_setup_prepare.run_if(in_state(StateEditorLoaded::LoadedNotSetup)),
             )
             .add_systems(
                 OnEnter(StateEditorLoaded::JustLoadedNeedSetup),
-                setup_prepare,
+                s_setup_prepare,
             )
             .add_systems(
                 Update,
-                setup_do.run_if(on_event::<EventEditorSubSystemSetup>()),
+                s_setup_do.run_if(on_event::<EventEditorSubSystemSetup>()),
             )
-            .add_systems(OnExit(StateGlobal::EditorRunning), editor_teardown);
+            .add_systems(OnExit(StateGlobal::EditorRunning), s_editor_teardown);
     }
 }
 
@@ -72,7 +72,7 @@ impl Plugin for PluginLoadSetup {
 
 // -- loading --
 
-fn load_prepare(
+fn s_load_prepare(
     mut commands: Commands,
     mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
@@ -97,7 +97,7 @@ fn load_prepare(
     s_user_input_allowed.set(StateUserInputAllowed::NotAllowed);
 }
 
-fn load_do(
+fn s_load_do(
     mut commands: Commands,
     mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     q_text_loading_editor: Query<Entity, With<MarkerTextLoadingEditor>>,
@@ -114,7 +114,7 @@ fn load_do(
     s_editor_loaded.set(StateEditorLoaded::JustLoadedNeedSetup);
 }
 
-fn setup_prepare(
+fn s_setup_prepare(
     mut commands: Commands,
     mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
@@ -141,7 +141,7 @@ fn setup_prepare(
     snext_editor_mode.set(StateEditorMode::Normal);
 }
 
-fn setup_do(
+fn s_setup_do(
     mut commands: Commands,
     mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
@@ -163,7 +163,7 @@ fn setup_do(
     s_global.set(StateGlobal::EditorRunning);
 }
 
-fn editor_teardown(
+fn s_editor_teardown(
     mut r_sub_system_status: ResMut<ResourceSubSystemStatus>,
     mut s_editor_loaded: ResMut<NextState<StateEditorLoaded>>,
     mut snext_editor_mode: ResMut<NextState<StateEditorMode>>,

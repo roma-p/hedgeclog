@@ -39,11 +39,11 @@ impl Plugin for PluginHedghog {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<ResHedgeHogInfo>()
-            .add_systems(Startup, init_hedgehog_info);
+            .add_systems(Startup, s_init_hedgehog_info);
     }
 }
 
-fn init_hedgehog_info(mut r_hedgehog_info: ResMut<ResHedgeHogInfo>) {
+fn s_init_hedgehog_info(mut r_hedgehog_info: ResMut<ResHedgeHogInfo>) {
     r_hedgehog_info.transform_shift = Transform::IDENTITY
         .mul_transform(Transform::from_rotation(Quat::from_rotation_y(PI / 4.0))) // 45° rotation to face player.
         .mul_transform(Transform::from_scale(Vec3 {

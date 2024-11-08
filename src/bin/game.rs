@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use hedgeclog::app::builder_bevy_app::{
-    add_plugins_default,
+    configure_default,
     set_episode_location,
     AppType
 
@@ -9,7 +9,7 @@ use hedgeclog::app::builder_bevy_app::{
 
 fn main() {
     let mut app = App::new();
-    add_plugins_default(&mut app);
+    configure_default(&mut app);
     set_episode_location(&mut app, AppType::Production);
     app.run();
 }

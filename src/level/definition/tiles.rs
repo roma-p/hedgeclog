@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use  crate::level::definition::level_definition::GridPosition;
-use crate::asset::asset_loader::{SceneAssets, load_scene_assets};
+use crate::asset::asset_loader::{SceneAssets, s_load_scene_assets};
 
 pub const TILE_SIZE: f32 = 2.0;
 pub const TILE_WIDTH: f32 = 0.3;
@@ -57,11 +57,11 @@ pub struct PluginTiles;
 impl Plugin for PluginTiles{
     fn build(&self, app: &mut App){
         app.init_resource::<ResCollectionTile>()
-            .add_systems(Startup, build_res_collection_tiles.after(load_scene_assets));
+            .add_systems(Startup, s_build_res_collection_tiles.after(s_load_scene_assets));
     }
 }
 
-fn build_res_collection_tiles(
+fn s_build_res_collection_tiles(
     mut res_collection_tiles: ResMut<ResCollectionTile>,
     scene_assets: Res<SceneAssets>,
 ){

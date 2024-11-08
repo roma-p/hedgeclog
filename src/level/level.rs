@@ -5,7 +5,7 @@ use crate::config::*;
 use crate::level::definition::camera::*;
 use crate::level::definition::hedgehog::*;
 use crate::level::definition::level_definition::*;
-use crate::level::definition::level_definition::{LevelGrid, LevelGridTile};
+use crate::level::definition::level_definition::{ResCurrentLevelGrid, LevelGridTile};
 use crate::level::definition::tiles::*;
 
 use crate::level::actions::edit_level::*;
@@ -38,13 +38,13 @@ impl Plugin for PluginLevel {
             .add_plugins(PluginLevelDefinition)
             .add_plugins(PluginEditLevel)
             .add_plugins(PluginSerialize)
-            .insert_resource(LevelGrid::default())
+            .insert_resource(ResCurrentLevelGrid::default())
             // TODO: tmp...
             .add_systems(
                 PostStartup,
-                level_loading_prepare.run_if(in_state(StateLevelLoaded::NotLoaded)),
+                s_level_loading_prepare.run_if(in_state(StateLevelLoaded::NotLoaded)),
             )
-            .add_systems(OnEnter(StateLevelLoaded::Loading), level_loading_load);
+            .add_systems(OnEnter(StateLevelLoaded::Loading), s_level_loading_load);
     }
 }
 
@@ -53,8 +53,11 @@ impl Plugin for PluginLevel {
 // TOOD -> move to actions/load_level
 //
 // -- loading --
+//
 
-fn level_loading_prepare(
+// -> Desactiver tout ça...
+
+fn s_level_loading_prepare(
     mut commands: Commands,
     mut state_level_loaded: ResMut<NextState<StateLevelLoaded>>,
 ) {
@@ -77,10 +80,10 @@ fn level_loading_prepare(
     state_level_loaded.set(StateLevelLoaded::Loading);
 }
 
-fn level_loading_load(
+fn s_level_loading_load(
     mut commands: Commands,
     mut s_level_loaded: ResMut<NextState<StateLevelLoaded>>,
-    mut r_level_grid: ResMut<LevelGrid>,
+    mut r_level_grid: ResMut<ResCurrentLevelGrid>,
     mut r_current_level: ResMut<ResCurrentLevel>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     entity: Query<Entity, With<MarkerTextLoadingLevel>>,
@@ -96,5 +99,8 @@ fn level_loading_load(
     commands.entity(entity.single()).despawn();
     s_level_loaded.set(StateLevelLoaded::Loaded);
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
-    r_current_level.episode_uid = Some(Uuid::new_v4());
+    r_current_level.level_uid = Some(Uuid::new_v4());
 }
+
+// -- FUNCS ------------------------------------------------------------------
+

@@ -15,7 +15,12 @@ use crate::app::common::{
     ResEpisodeLocation,
 };
 
-pub fn add_plugins_default(app: &mut App){
+#[derive(Resource, Default)]
+pub struct ResTypeRegister {
+    type_register: AppTypeRegistry,
+}
+
+pub fn configure_default(app: &mut App){
     app
         // Bevy built-ins.
         .add_plugins(DefaultPlugins)
@@ -33,10 +38,19 @@ pub fn add_plugins_default(app: &mut App){
         .add_plugins(PluginAppCommon);
 }
 
-pub fn add_plugins_dev(app: &mut App){
+pub fn configure_dev(app: &mut App){
     app
         .add_plugins(PluginEditor)
-        .add_plugins(PluginDebug);
+        .add_plugins(PluginDebug)
+        // Initialize type register (used for scene serialization)
+        .insert_resource(ResTypeRegister::default())
+        .add_systems(PostStartup, s_fill_type_register);
+}
+
+fn s_fill_type_register(world: &mut World) {
+    let res = world.resource::<AppTypeRegistry>().clone();
+    let mut type_register = world.resource_mut::<ResTypeRegister>();
+    type_register.type_register = res;
 }
 
 // TODO: move to common?

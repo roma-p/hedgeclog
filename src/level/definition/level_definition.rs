@@ -60,28 +60,33 @@ pub struct LevelUid{
     pub uid: Option<Uuid>,
 }
 
-// -- RESSOURCES -------------------------------------------------------------
-
-#[derive(Resource, Default)]
-pub struct ResCurrentLevel{
-    pub episode_uid: Option<Uuid>,
-    // pub episode_entity: Option<Entity>,
-    // TODO -> level grid ?
-}
-
-#[derive(Resource, Debug, Default)]
+#[derive(Component, Default, Debug, Clone, Copy)]
 pub struct LevelGrid {
     pub level_grid: [[LevelGridTile; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
     pub hedgehog_grid: [[LevelGridHedgehog; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
 }
 
+// -- RESSOURCES -------------------------------------------------------------
+
+#[derive(Resource, Default)]
+pub struct ResCurrentLevel{
+    pub level_uid: Option<Uuid>,
+    pub level_entity: Option<Entity>,
+    // TODO -> level grid ?
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct ResCurrentLevelGrid {
+    pub level_grid: [[LevelGridTile; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
+    pub hedgehog_grid: [[LevelGridHedgehog; LEVEL_DEFAULT_SIZE];LEVEL_DEFAULT_SIZE],
+}
 
 pub struct PluginLevelDefinition;
 
 impl Plugin for PluginLevelDefinition{
     fn build(&self, app: &mut App){
         app
-            .insert_resource(LevelGrid::default())
+            .insert_resource(ResCurrentLevelGrid::default())
             .insert_resource(ResCurrentLevel::default())
             .register_type::<LevelDescription>()
             .register_type::<LevelDescriptionTile>()

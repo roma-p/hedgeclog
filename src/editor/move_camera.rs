@@ -9,7 +9,7 @@ use crate::level::definition::camera::{
     zoom_camera,
     ZoomCameraMode, 
     EventCameraSnap,
-    camera_snap_position_default
+    s_camera_snap_position_default
 };
 
 use crate::editor::common::{
@@ -33,24 +33,24 @@ pub struct PluginEditorCameraMovement;
 impl Plugin for PluginEditorCameraMovement{
     fn build(&self, app: &mut App){
         app
-            .add_systems(OnEnter(StateEditorLoaded::Loading) , load)
+            .add_systems(OnEnter(StateEditorLoaded::Loading) , s_load)
             .add_systems(
                 OnEnter(StateEditorView::Level),
-                camera_snap_position_default
+                s_camera_snap_position_default
             )
             .add_systems(
                 Update,
-                pan_camera 
+                s_pan_camera 
                 .run_if(in_state(StateGlobal::EditorRunning))
             )
             .add_systems(
                 OnEnter(StateEditorView::TileSelector),
-                camera_snap_position_editor_tile_selector_view
+                s_camera_snap_position_editor_tile_selector_view
             );
     }
 }
 
-pub fn load(
+pub fn s_load(
     mut commands: Commands,
     mut e_editor_subsystem_loaded: EventWriter<EventEditorSubSystemLoaded>,
 ) {
@@ -72,7 +72,7 @@ pub fn load(
     e_editor_subsystem_loaded.send(EventEditorSubSystemLoaded);
 }
 
-fn pan_camera(
+fn s_pan_camera(
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
     mut camera_query: Query<
         (&mut Projection, &mut Transform),
@@ -115,7 +115,7 @@ fn pan_camera(
 
 }
 
-fn camera_snap_position_editor_tile_selector_view(
+fn s_camera_snap_position_editor_tile_selector_view(
     camera_info_query: Query<
         (&Transform, &OrthographicProjection),
         (With <MarkerCameraInfoEditorTileSelectorView>, Without<MarkerCamera>)

@@ -17,7 +17,7 @@ use crate::editor::common::{
     SSetEditor,
 };
 use crate::level::definition::level_definition::{
-    LevelGrid, LEVEL_ORIGIN,
+    ResCurrentLevelGrid, LEVEL_ORIGIN,
 };
 use crate::level::actions::edit_level::{
     EventHedgehogCreationAsked,
@@ -53,20 +53,20 @@ impl Plugin for PluginAddRemoveHedgehog{
             .add_event::<EventHedgehogCreated>()
             .add_event::<EventHedgehogRemoved>()
             .insert_resource(ModeHedgehogLocalBuffer::default())
-            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
-            .add_systems(OnExit(StateGlobal::EditorRunning), teardown)
+            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), s_setup)
+            .add_systems(OnExit(StateGlobal::EditorRunning), s_teardown)
             .add_systems(
                 Update,
                 (
-                    user_input
+                    s_user_input
                         .in_set(SSetEditor::UserInput)
                         .run_if(in_state(StateEditorMode::Hedgehog)),
-                    update_hedgehog_creator_position
+                    s_update_hedgehog_creator_position
                         .run_if(on_event::<EventCursorGridPositionChanged>()
                         .and_then(in_state(StateEditorMode::Hedgehog))),
-                    create_hedgehog
+                    s_create_hedgehog
                         .run_if(on_event::<EventHedgehogCreated>()),
-                    remove_hedgehog
+                    s_remove_hedgehog
                         .run_if(on_event::<EventHedgehogRemoved>()),
                 )
             );
@@ -75,7 +75,7 @@ impl Plugin for PluginAddRemoveHedgehog{
 
 // -- SYSTEMS ----------------------------------------------------------------
 
-fn setup(
+fn s_setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -113,14 +113,14 @@ fn setup(
     e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
 }
 
-fn teardown(
+fn s_teardown(
     mut commands: Commands,
     q_hedgehog_creator: Query<Entity, With <MarkerHedgehogCreator>>,
 ) {
     commands.entity(q_hedgehog_creator.single()).despawn_recursive();
 }
 
-fn user_input(
+fn s_user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
     mut e_h_created: EventWriter<EventHedgehogCreated>,
     mut e_h_removed: EventWriter<EventHedgehogRemoved>,
@@ -137,12 +137,12 @@ fn user_input(
 
 // TODO: globlal logic for userinput allowed.
 
-fn update_hedgehog_creator_position(
+fn s_update_hedgehog_creator_position(
     r_cursor_grid_position: Res<CursorGridPosition>,
     mut r_hedgehog_builder_info: ResMut<ModeHedgehogLocalBuffer>,
     r_hedgehog_info: Res<ResHedgeHogInfo>,
     mut q_hedgehog_creator: Query<&mut Transform, With <MarkerHedgehogCreator>>,
-    r_grid : Res<LevelGrid>,
+    r_grid : Res<ResCurrentLevelGrid>,
 ) {
     let grid_pos_x = r_cursor_grid_position.grid_pos_x;
     let grid_pos_z = r_cursor_grid_position.grid_pos_z;
@@ -176,7 +176,7 @@ fn update_hedgehog_creator_position(
     *transform = transform.mul_transform(r_hedgehog_info.transform_shift);
 }
 
-fn create_hedgehog(
+fn s_create_hedgehog(
     q_hedgehog_creator: Query<&mut Transform, With <MarkerHedgehogCreator>>,
     r_hedgehog_builder_info: ResMut<ModeHedgehogLocalBuffer>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
@@ -193,7 +193,7 @@ fn create_hedgehog(
 
 // When deleting tiles, also delete hedgehog.
 
-fn remove_hedgehog(
+fn s_remove_hedgehog(
     r_cursor_grid_position: Res<CursorGridPosition>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     mut e_event_hedgehog_removal_asked: EventWriter<EventHedgehogRemovalAsked>,

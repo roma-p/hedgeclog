@@ -37,8 +37,8 @@ impl Plugin for PluginEditor{
             .add_systems(
                 Update,
                 (
-                    user_input_editor_global.in_set(SSetEditor::UserInput),
-                    update_cursor_position_on_level_edited.run_if(
+                    s_user_input_editor_global.in_set(SSetEditor::UserInput),
+                    s_update_cursor_position_on_level_edited.run_if(
                         on_event::<EventLevelEdidted>()
                     )
                 )
@@ -54,7 +54,7 @@ impl Plugin for PluginEditor{
 
 // -- User input --
 
-fn user_input_editor_global(
+fn s_user_input_editor_global(
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
     mut s_state_global: ResMut<NextState<StateGlobal>>,
     mut snext_editor_mode: ResMut<NextState<StateEditorMode>>,
@@ -81,7 +81,7 @@ fn user_input_editor_global(
     }
 } 
 
-fn update_cursor_position_on_level_edited(
+fn s_update_cursor_position_on_level_edited(
     mut e_cursor_grid_position_changed: EventWriter<EventCursorGridPositionChanged>,
 ){
     e_cursor_grid_position_changed.send(EventCursorGridPositionChanged);

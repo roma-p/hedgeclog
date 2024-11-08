@@ -14,7 +14,7 @@ use crate::level::definition::tiles::{
 use crate::level::actions::edit_level::{
     EventTileCreationAsked, EventTileRemovalAsked
 };
-use crate::level::definition::level_definition::{LEVEL_ORIGIN, LevelGrid};
+use crate::level::definition::level_definition::{LEVEL_ORIGIN, ResCurrentLevelGrid};
 use crate::editor::common::{
     EventEditorSubSystemSetup,
     EventTileSelectedChanged,
@@ -46,29 +46,29 @@ impl Plugin for PluginEditorAddRemoveTile{
         app
             .add_event::<EventEditorTileCreationAsked>()
             .add_event::<EventEditorTileRemovalAsked>()
-            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
-            .add_systems(OnExit(StateGlobal::EditorRunning), teardown)
+            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), s_setup)
+            .add_systems(OnExit(StateGlobal::EditorRunning), s_teardown)
             .add_systems(
                 Update,
                 (
-                    user_input
+                    s_user_input
                         .in_set(SSetEditor::UserInput)
                         .run_if(in_state(StateEditorMode::Tile)),
-                    update_tile_creator_type
+                    s_update_tile_creator_type
                         .run_if(on_event::<EventTileSelectedChanged>()),
-                    update_tile_creator_position
+                    s_update_tile_creator_position
                         .run_if(on_event::<EventCursorGridPositionChanged>()
                         .and_then(in_state(StateEditorMode::Tile))),
-                    create_tile
+                    s_create_tile
                         .run_if(on_event::<EventEditorTileCreationAsked>()),
-                    remove_tile
+                    s_remove_tile
                         .run_if(on_event::<EventEditorTileRemovalAsked>()),
                 )
             );
     }
 }
 
-fn setup(
+fn s_setup(
     mut commands: Commands,
     r_collection_tile: Res<ResCollectionTile>,
     r_local_buffer: Res<ModeTileLocalBuffer>,
@@ -96,11 +96,11 @@ fn setup(
     e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
 }
 
-fn teardown(
+fn s_teardown(
     mut commands: Commands,
     q_tile_creator: Query<Entity, With <MarkerTileCreator>>,
     mut r_local_buffer: ResMut<ModeTileLocalBuffer>,
-    r_grid : Res<LevelGrid>,
+    r_grid : Res<ResCurrentLevelGrid>,
     mut q_tiles: Query<(Entity, &mut Visibility), With <MarkerTileOnLevel>>
 ) {
     commands.entity(q_tile_creator.single()).despawn_recursive();
@@ -116,7 +116,7 @@ fn teardown(
     r_local_buffer.hover_tile_grid_position = None;
 }
 
-fn user_input(
+fn s_user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
     mut e_tile_created: EventWriter<EventEditorTileCreationAsked>,
@@ -136,7 +136,7 @@ fn user_input(
     }
 } 
 
-fn update_tile_creator_type(
+fn s_update_tile_creator_type(
     mut commands: Commands,
     q_tile_creator: Query<Entity, With <MarkerTileCreator>>,
     r_collection_tile: Res<ResCollectionTile>,
@@ -172,9 +172,9 @@ fn update_tile_creator_type(
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
 
-fn update_tile_creator_position(
+fn s_update_tile_creator_position(
     r_cursor_grid_position: Res<CursorGridPosition>,
-    r_grid : Res<LevelGrid>,
+    r_grid : Res<ResCurrentLevelGrid>,
     mut r_local_buffer: ResMut<ModeTileLocalBuffer>,
     mut q_tile_creator: Query<&mut Transform, With <MarkerTileCreator>>,
     mut q_tiles: Query<(Entity, &GridPosition, &mut Visibility), With <MarkerTileOnLevel>>,
@@ -250,7 +250,7 @@ fn update_tile_creator_position(
 }
 
 
-fn create_tile(
+fn s_create_tile(
     r_local_buffer: Res<ModeTileLocalBuffer>,
     q_tile_creator: Query<&Transform, With <MarkerTileCreator>>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
@@ -272,7 +272,7 @@ fn create_tile(
     s_user_input_allowed.set(StateUserInputAllowed::Allowed);
 }
 
-fn remove_tile(
+fn s_remove_tile(
     r_cursor_grid_position: Res<CursorGridPosition>,
     mut s_user_input_allowed: ResMut<NextState<StateUserInputAllowed>>,
     mut e_event_tile_removal_asked: EventWriter<EventTileRemovalAsked>,

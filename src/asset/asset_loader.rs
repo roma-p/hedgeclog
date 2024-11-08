@@ -28,11 +28,11 @@ impl Plugin for PluginAssetLoader{
         app
             .init_resource::<SceneAssets>()
             .init_resource::<HedgehogAssets>()
-            .add_systems(Startup, (load_scene_assets, load_hedgehog_assets));
+            .add_systems(Startup, (s_load_scene_assets, s_load_hedgehog_assets));
     }
 }
 
-fn load_hedgehog_assets(
+fn s_load_hedgehog_assets(
     mut hedgehog_assets: ResMut<HedgehogAssets>,
     asset_server: Res<AssetServer>,
 ) {
@@ -41,7 +41,7 @@ fn load_hedgehog_assets(
     };
 }
 
-pub fn load_scene_assets(
+pub fn s_load_scene_assets(
     mut scene_assets: ResMut<SceneAssets>,
     asset_server: Res<AssetServer>,
 ) {

@@ -41,16 +41,16 @@ impl Plugin for PluginEditorSelectTile{
     fn build(&self, app: &mut App){
         app
             .insert_resource(TilesSelectionGrid::default())
-            .add_systems(OnEnter(StateEditorLoaded::Loading), load)
+            .add_systems(OnEnter(StateEditorLoaded::Loading), s_load)
             .add_systems(
                 Update,
                 (
                     // TODO: put all of this in a system set....
-                    snap_selector_cube_to_cursor_coord.run_if(
+                    s_snap_selector_cube_to_cursor_coord.run_if(
                         in_state(StateGlobal::EditorRunning).and_then(
                         in_state(StateEditorView::TileSelector))
                     ),
-                    user_input
+                    s_user_input
                         .run_if(in_state(StateEditorView::TileSelector))
                         .in_set(SSetEditor::UserInput)
                 )
@@ -60,7 +60,7 @@ impl Plugin for PluginEditorSelectTile{
 
 // -- SYSTEM -----------------------------------------------------------------
 
-fn load(
+fn s_load(
     mut commands: Commands,
     mut tiles_selection_grid: ResMut<TilesSelectionGrid>,
     mut cursor_to_plane_coord: ResMut<CursorToGroundCoordonate>,
@@ -153,7 +153,7 @@ fn load(
 // ) {
 // }
 
-fn user_input(
+fn s_user_input(
     r_mouse_input: Res<ButtonInput<MouseButton>>,
     r_tile_selection_grid: Res<TilesSelectionGrid>,
     mut e_tile_selected_changed: EventWriter<EventTileSelectedChanged>,
@@ -172,7 +172,7 @@ fn user_input(
     }
 } 
 
-fn snap_selector_cube_to_cursor_coord(
+fn s_snap_selector_cube_to_cursor_coord(
     r_cursor_to_ground_coord: Res<CursorToGroundCoordonate>,
     mut r_tile_selection_grid: ResMut<TilesSelectionGrid>,
     mut q_selector_cube: Query<&mut Transform, With <MarkerTileSelectorCube>>,

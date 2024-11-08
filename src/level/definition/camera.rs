@@ -37,19 +37,19 @@ impl Plugin for PluginCamera {
     fn build(&self, app: &mut App){
         app
             .add_event::<EventCameraSnap>()
-            .add_systems(Startup, spawn_camera)
+            .add_systems(Startup, s_spawn_camera)
             .add_systems(
                 OnEnter(StateLevelLoaded::Loaded), 
-                camera_snap_position_default
+                s_camera_snap_position_default
             )
             .add_systems(
                 OnEnter(StateGlobal::Game),
-                camera_snap_position_default
+                s_camera_snap_position_default
                 .run_if(in_state(StateLevelLoaded::Loaded))
             )
             .add_systems(
                 OnExit(StateEditorMode::Tile),
-                camera_snap_position_default
+                s_camera_snap_position_default
             )
             .add_systems(
                 Update,
@@ -58,7 +58,7 @@ impl Plugin for PluginCamera {
     }
 }
 
-fn spawn_camera(mut commands: Commands) {
+fn s_spawn_camera(mut commands: Commands) {
     commands.spawn(
         (
             Camera3dBundle{
@@ -90,7 +90,7 @@ fn spawn_camera(mut commands: Commands) {
     );
 }
 
-pub fn camera_snap_position_default(
+pub fn s_camera_snap_position_default(
     camera_info_query: Query<
         (&Transform, &OrthographicProjection,),
         (With <MarkerCameraInfoDefault>, Without<MarkerCamera>)

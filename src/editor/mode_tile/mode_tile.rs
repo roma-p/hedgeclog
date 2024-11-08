@@ -4,7 +4,7 @@ use crate::editor::common::{
     StateEditorView, 
     EventCursorGridPositionChanged
 };
-use crate::level::definition::level_definition::LevelGrid;
+use crate::level::definition::level_definition::ResCurrentLevelGrid;
 use crate::editor::mode_tile::common::{ModeTileLocalBuffer, PluginEditorModeTileCommon};
 use crate::editor::mode_tile::select_tile::PluginEditorSelectTile;
 use crate::editor::mode_tile::add_remove_tile::{
@@ -28,9 +28,9 @@ impl Plugin for PluginEditorModeTile{
             .add_plugins(PluginEditorSelectTile)
             .add_plugins(PluginEditorModeTileCommon)
             .add_plugins(PluginEditorAddRemoveTile)
-            .add_systems(OnEnter(StateEditorMode::Tile), enter_mode_tile)
-            .add_systems(OnExit(StateEditorMode::Tile), exit_mode_tile)
-            .add_systems(Update, user_input_editor_mode_tile
+            .add_systems(OnEnter(StateEditorMode::Tile), s_enter_mode_tile)
+            .add_systems(OnExit(StateEditorMode::Tile), s_exit_mode_tile)
+            .add_systems(Update, s_user_input_editor_mode_tile
                 .in_set(SSetEditor::UserInput)
                 .run_if(in_state(StateEditorMode::Tile))
             );
@@ -39,7 +39,7 @@ impl Plugin for PluginEditorModeTile{
 
 // -- SYSTEM -----------------------------------------------------------------
 
-fn enter_mode_tile(
+fn s_enter_mode_tile(
     mut q_tile_creator: Query< &mut Visibility, With <MarkerTileCreator>>,
     mut e_tile_creator_moved: EventWriter<EventCursorGridPositionChanged>,
 ) {
@@ -48,10 +48,10 @@ fn enter_mode_tile(
     e_tile_creator_moved.send(EventCursorGridPositionChanged);
 }
 
-fn exit_mode_tile(
+fn s_exit_mode_tile(
     mut q_tile_creator: Query< &mut Visibility, (With <MarkerTileCreator>, Without<MarkerTileOnLevel>)>,
     r_local_buffer: Res<ModeTileLocalBuffer>,
-    r_grid : Res<LevelGrid>,
+    r_grid : Res<ResCurrentLevelGrid>,
     mut q_tiles: Query<(Entity, &mut Visibility), (With <MarkerTileOnLevel>, Without<MarkerTileCreator>)>
 ) {
 
@@ -72,13 +72,12 @@ fn exit_mode_tile(
     // currently done on camera... to be changed...
 }
 
-fn user_input_editor_mode_tile(
+fn s_user_input_editor_mode_tile(
     r_keyboard_input: Res<ButtonInput<KeyCode>>,
     s_editor_view: Res<State<StateEditorView>>,
     mut s_next_editor_view: ResMut<NextState<StateEditorView>>,
 
 ) {
-
     // ENTERRING / LEAVING TILE SELECTION SCREEN.
     if r_keyboard_input.just_pressed(KeyCode::Space) {
         use StateEditorView::*;

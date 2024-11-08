@@ -39,14 +39,14 @@ impl Plugin for PluginCursorToWorld{
         app
             .insert_resource(CursorToGroundCoordonate::default())
             .insert_resource(CursorGridPosition::default())
-            .add_systems(OnEnter(StateEditorLoaded::Loading), load)
-            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), setup)
+            .add_systems(OnEnter(StateEditorLoaded::Loading), s_load)
+            .add_systems(OnEnter(StateEditorLoaded::LoadedAndSetuping), s_setup)
             .add_systems(
                 Update,
                 (
-                    update_cursor_to_world
+                    s_update_cursor_to_world
                         .run_if(in_state(StateGlobal::EditorRunning)),
-                    update_cursor_to_grid_position
+                    s_update_cursor_to_grid_position
                         .run_if(in_state(StateGlobal::EditorRunning))
                 )
             );
@@ -55,7 +55,7 @@ impl Plugin for PluginCursorToWorld{
 
 // -- SYSTEM -----------------------------------------------------------------
 
-pub fn load(
+pub fn s_load(
     mut commands: Commands,
     mut e_editor_subsystem_loaded: EventWriter<EventEditorSubSystemLoaded>,
 ) {
@@ -78,7 +78,7 @@ pub fn load(
 //     commands.entity(q_plane.single()).despawn();
 // }
 
-fn setup(
+fn s_setup(
     _commands: Commands,
     mut r_cursor_grid_position: ResMut<CursorGridPosition>,
     mut e_editor_subsystem_setup: EventWriter<EventEditorSubSystemSetup>,
@@ -88,7 +88,7 @@ fn setup(
     e_editor_subsystem_setup.send(EventEditorSubSystemSetup);
 }
 
-fn update_cursor_to_world(
+fn s_update_cursor_to_world(
     mut cursor_to_ground_coord: ResMut<CursorToGroundCoordonate>,
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MarkerCamera>>,
@@ -122,7 +122,7 @@ fn update_cursor_to_world(
     cursor_to_ground_coord.local = local_cursor.xz();
 }
 
-fn update_cursor_to_grid_position(
+fn s_update_cursor_to_grid_position(
     mut r_cursor_grid_position: ResMut<CursorGridPosition>,
     r_cursor_to_ground_coordonate: Res<CursorToGroundCoordonate>,
     mut e_cursor_grid_position_changed: EventWriter<EventCursorGridPositionChanged>,
