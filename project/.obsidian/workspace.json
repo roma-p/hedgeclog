@@ -1,0 +1,167 @@
+{
+  "main": {
+    "id": "0fe5f4e21b556dbf",
+    "type": "split",
+    "children": [
+      {
+        "id": "5afa1a06610c5c36",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2212df27d01cb6be",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ideas.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ideas"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "45e2613da485a5c0",
+    "type": "split",
+    "children": [
+      {
+        "id": "1c1d6a4d43b5bb5d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6e0d69228371be5e",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "374c25fbf96d0b3b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "d44f94506732c6df",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "bb83781f6eb99037",
+    "type": "split",
+    "children": [
+      {
+        "id": "bfccfd25420f8098",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "da03245b5a66b7ed",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "ideas.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for ideas"
+            }
+          },
+          {
+            "id": "2128069e60e6315f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "ideas.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from ideas"
+            }
+          },
+          {
+            "id": "a713186af8897eaf",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "ac9f1475938bc261",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "ideas.md"
+              },
+              "icon": "lucide-list",
+              "title": "Outline of ideas"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "2212df27d01cb6be",
+  "lastOpenFiles": []
+}
