@@ -17,7 +17,7 @@ use crate::editor::common::{
     TRANSLATION_EDITOR_TILE_SELECTOR_ORIGIN, StateEditorView
 };
 
-use crate::config::StateGlobal;
+use crate::config::{StateGlobal, StateLevelLoaded};
 
 use crate::level::definition::tiles::TILE_SIZE;
 
@@ -36,7 +36,7 @@ impl Plugin for PluginEditorCameraMovement{
             .add_systems(OnEnter(StateEditorLoaded::Loading) , s_load)
             .add_systems(
                 OnEnter(StateEditorView::Level),
-                s_camera_snap_position_default
+                s_camera_snap_position_default.run_if(in_state(StateLevelLoaded::Loaded))
             )
             .add_systems(
                 Update,
