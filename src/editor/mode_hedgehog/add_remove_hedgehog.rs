@@ -95,7 +95,7 @@ fn s_setup(
         (
             BundleHedgehog {
                 model: PbrBundle {
-                    mesh: meshes.add(Mesh::from(Plane3d{normal: Direction3d::Y})),
+                    mesh: meshes.add(Mesh::from(Plane3d{normal: Dir3::Y, half_size: Vec2{x:1.0, y:1.0,}})),
                     material: hedgehog_material,
                     visibility: Visibility::Hidden,
                     transform: r_hedgehog_info.transform_shift.clone(),

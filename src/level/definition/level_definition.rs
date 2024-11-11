@@ -1,6 +1,6 @@
 use std::usize;
 use bevy::prelude::*;
-use bevy::utils::Uuid;
+use uuid::Uuid;
 
 use crate::level::definition::tiles::*;
 use crate::level::definition::hedgehog::*;

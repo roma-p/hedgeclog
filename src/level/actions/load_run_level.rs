@@ -1,6 +1,6 @@
 
 use bevy::prelude::*;
-use bevy::utils::Uuid;
+use uuid::Uuid;
 use crate::level::definition::level_definition::{
     LevelGrid,
     LevelUid,

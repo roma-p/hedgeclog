@@ -222,7 +222,7 @@ fn s_create_hedgehog(
             (
                 BundleHedgehog {
                     model: PbrBundle {
-                        mesh: meshes.add(Mesh::from(Plane3d{normal: Direction3d::Y})),
+                        mesh: meshes.add(Mesh::from(Plane3d{normal: Dir3::Y, half_size: Vec2{x:1.0, y:1.0,}})),
                         material: hedgehog_material,
                         transform: e.hedgehog_transform.clone(),
                         ..Default::default()

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::utils::Uuid;
+use uuid::Uuid;
 use crate::episode::episode_definition::*;
 use crate::level::actions::load_run_level::create_new_level;
 use crate::app::common::*;

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::utils::Uuid;
+use uuid::Uuid;
 
 // -- CONSTS -----------------------------------------------------------------
 

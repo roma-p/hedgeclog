@@ -109,8 +109,8 @@ fn s_update_cursor_to_world(
         return;
     };
 
-    // TODO: new this Plane at loading.
-    let Some(distance) = ray.intersect_plane(plane_origin, Plane3d::new(plane_normal)) else {
+    // TODO: new this Plane at loading....
+    let Some(distance) = ray.intersect_plane(plane_origin, InfinitePlane3d::new(plane_normal)) else {
         return;
     };
 
